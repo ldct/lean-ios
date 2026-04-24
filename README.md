@@ -1,35 +1,24 @@
-# lean4-ios
+# lean-ios
 
-This repository contains:
+Personal fork of [paulcadman/lean-ios](https://github.com/paulcadman/lean-ios)
+— the shared Lean-4-for-iOS infrastructure plus my own projects built on top.
 
-1. A modified [Lean 4 source tree](lean4/) so that the Lean runtime and stage0
-standard library can be compiled with the iOS toolchain and linked into native
-iOS apps.
-
-2. [Lean Bindings for SDL3 / SDL3_ttf](sdl-bindings/).
-
-3. [common Makefiles and C framework](app-common/) for building iOS SDL3 apps.
-
-4. Some [examples](examples/) demonstrating how to use the framework.
-
-## Gallery
+## Projects
 
 <table>
   <tr>
     <td width="50%">
       <div align="center">
-        <b><a href="examples/flappy">flappy</a></b>
+        <b><a href="projects/swiftui-hello">swiftui-hello</a></b>
         <br>
-        <video src="https://github.com/user-attachments/assets/689caed9-129b-4f28-a1c5-78c1c7b6434f"
-           width="240"
-           autoplay muted controls></video>
+        <img src="assets/app-example.png" width="240"/>
         <br>
-        <sub>Flappy Bird clone rendered with SDL.</sub>
+        <sub>Minimal SwiftUI iOS app calling a Lean function via a C bridge.</sub>
       </div>
     </td>
     <td width="50%">
       <div align="center">
-        <b><a href="examples/lean-ios-runner">lean-ios-runner</a></b>
+        <b><a href="projects/elaborator">elaborator</a></b>
         <br>
         <img src="assets/ios-lean-example.png" width="240"/>
         <br>
@@ -37,87 +26,68 @@ iOS apps.
       </div>
     </td>
   </tr>
-  <tr>
-    <td width="50%">
-      <div align="center">
-        <b><a href="examples/sdl-app">sdl-app</a></b>
-        <br>
-        <video src="https://github.com/user-attachments/assets/7c1a2aa3-0069-45fc-9366-4f9f92c1c0f8"
-           width="240"
-           autoplay muted controls></video>
-        <br>
-        <sub>SDL iOS app with animated 2D graphics.</sub>
-      </div>
-    </td>
-    <td width="50%">
-      <div align="center">
-        <b><a href="examples/bus-times">bus-times</a></b>
-        <br>
-        <img src="assets/bus-times-example.png" width="240"/>
-        <br>
-        <sub>Live TfL bus arrivals fetched over HTTP, rendered with SDL.</sub>
-      </div>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%">
-      <div align="center">
-        <b><a href="examples/app">app</a></b>
-        <br>
-        <img src="assets/app-example.png" width="240"/>
-        <br>
-        <sub>Minimal Swift iOS app calling a Lean function via a C bridge.</sub>
-      </div>
-    </td>
-    <td></td>
-  </tr>
 </table>
+
+## Shared infrastructure
+
+- [`lean4/`](lean4/) — modified Lean 4 source tree so the runtime and stage0
+  standard library can be compiled with the iOS toolchain and linked into
+  native iOS apps.
+- [`sdl-bindings/`](sdl-bindings/) — Lean bindings for SDL3 / SDL3_ttf (kept
+  for future use; no project currently depends on them).
+- [`app-common/`](app-common/) — common Makefiles and C framework for building
+  iOS SDL3 apps.
+- `scripts/`, top-level `Makefile` — cross-compile the Lean runtime + stage0
+  stdlib for `arm64-apple-ios*-simulator` / device.
 
 ## Dependencies
 
-1. Clone the repo including submodules (`lean4`, SDL, SDL_ttf, and resvg live
-   as submodules under `lean4/` and `third-party/`):
+1. Clone with submodules:
 
    ```
-   git clone --recursive https://github.com/paulcadman/lean-ios.git
+   git clone --recursive https://github.com/ldct/lean-ios.git
    ```
 
-   Or, if you already cloned without `--recursive`:
+   Or, if already cloned:
 
    ```
    git submodule update --init --recursive
    ```
 
-2. Install [Xcode](https://developer.apple.com/xcode/).
+2. Install [Xcode](https://developer.apple.com/xcode/) (full Xcode.app — the
+   Command Line Tools alone do not include the iOS simulator SDK).
 
-3. Install the Xcode command line tools:
-
-   ```
-   xcode-select --install
-   ```
-
-4. Install [Homebrew](https://brew.sh/), then install the build dependencies:
+3. Install the build dependencies via [Homebrew](https://brew.sh/):
 
    ```
    brew install cmake zstd
    ```
 
-5. Install [Rust](https://rustup.rs/) (the SDL-based examples link against
-   `resvg`, which is built from source):
+## Building
 
-   ```
-   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-   ```
+From the repo root:
 
-   Then add the iOS targets:
+```
+make             # cross-compile Lean runtime + stage0 stdlib for iOS simulator
+```
 
-   ```
-   rustup target add aarch64-apple-ios-sim aarch64-apple-ios
-   ```
+Then in a project directory (e.g. `projects/swiftui-hello`):
+
+```
+make sim-app       # build the .app bundle
+make run-sim-app   # build, boot a simulator, install, launch
+```
+
+If the default simulator device (`iPhone 16` in the Makefile) isn't present on
+your installed simulator runtime, override it:
+
+```
+SIMULATOR_DEVICE="iPhone 17" make run-sim-app
+```
 
 ## Building for physical device
 
-Each example has a `Makefile.device` target that codesigns and installs the app
+Each project has a `Makefile.device` target that codesigns and installs the app
 on a connected iOS device. Invoke it with `make -f Makefile.device
 run-device-app` and set the following environment variables:
 
@@ -126,9 +96,9 @@ run-device-app` and set the following environment variables:
   Development: Your Name (TEAMID)`, as shown by `security find-identity -v -p
   codesigning`).
 - `DEVICE_PROVISION_PROFILE` — path to a `.mobileprovision` file whose bundle
-  identifier matches the example's `APP_BUNDLE_ID` (or `SDL_APP_BUNDLE_ID`).
+  identifier matches the project's `APP_BUNDLE_ID`.
 
 ## Architecture
 
 See [docs/architecture.md](docs/architecture.md) for an overview of the
-project structure and build dependencies.
+project structure and build dependencies (inherited from upstream).

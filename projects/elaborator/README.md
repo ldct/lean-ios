@@ -1,7 +1,8 @@
-# flappy
+# elaborator
 
-A Flappy Bird clone written in Lean, rendered with SDL on iOS. It uses logic
-from https://github.com/paulcadman/flappy.
+iOS app that embeds the Lean elaborator and type-checks Lean source at runtime
+on-device. Host `.olean` files are downloaded from a `lean4` release and
+bundled into the app.
 
 ## Build
 

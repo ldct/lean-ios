@@ -1,6 +1,0 @@
-include App.mk
-
-ROOT_DIR ?= ../..
-APP_BUILD_DIR ?= $(ROOT_DIR)/build/example-flappy-sim
-
-include ../../app-common/Makefile.sim
