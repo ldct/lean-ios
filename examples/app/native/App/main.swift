@@ -1,30 +1,23 @@
-import UIKit
+import SwiftUI
 
 @main
-final class AppDelegate: UIResponder, UIApplicationDelegate {
-    var window: UIWindow?
+struct LeanIOSExampleApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+}
 
-    func application(
-        _ application: UIApplication,
-        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
-    ) -> Bool {
-        let window = UIWindow(frame: UIScreen.main.bounds)
+struct ContentView: View {
+    let leanValue: UInt32 = {
+        let v = lean_ios_add_one(41)
+        NSLog("lean_ios_add_one(41) = %u", v)
+        return v
+    }()
 
-        let viewController = UIViewController()
-        viewController.view.backgroundColor = .systemBackground
-
-        let label = UILabel(frame: viewController.view.bounds)
-        label.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        label.textAlignment = .center
-        label.numberOfLines = 0
-        label.font = .systemFont(ofSize: 28, weight: .semibold)
-        label.textColor = .label
-        label.text = "Lean says: \(lean_ios_add_one(41))"
-
-        viewController.view.addSubview(label)
-        window.rootViewController = viewController
-        window.makeKeyAndVisible()
-        self.window = window
-        return true
+    var body: some View {
+        Text("Lean says: \(leanValue)")
+            .font(.system(size: 28, weight: .semibold))
     }
 }
