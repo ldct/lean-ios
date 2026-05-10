@@ -11,15 +11,11 @@ struct LeanIOSElabExampleApp: App {
 
 private struct ContentView: View {
   @State private var source = """
-    import Lean
-
-    #check Nat.succ
-
-    example : 1 = 1 := rfl
-
-    def foo (n : Nat) : Nat := n + 1
-
-    #eval foo 1
+    import Batteries
+    open Batteries
+    def m : RBMap String Nat compare := (RBMap.empty.insert "x" 42).insert "y" 7
+    #eval m.find? "x"
+    #eval m.size
     """
 
   @State private var output = "No messages yet."

@@ -15,7 +15,7 @@ void lean_initialize();
 void lean_init_task_manager();
 void lean_enable_initializer_execution();
 void lean_io_mark_end_initialization();
-lean_object *checkLeanSource(b_lean_obj_arg bundleRoot, b_lean_obj_arg source);
+lean_object *checkLeanSource(lean_obj_arg bundleRoot, lean_obj_arg source);
 static std::string g_bridge_output;
 
 static bool ensure_lean_initialized() {

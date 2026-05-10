@@ -13,10 +13,10 @@ private def collectMessages (snap : Language.SnapshotTree) : MessageLog :=
   snap.getAll.foldl (init := MessageLog.empty) fun messages snapshot =>
     messages ++ snapshot.diagnostics.msgLog
 
-@[export checkLeanSource]
-def checkLeanSource (bundleRoot : @& String) (input : @& String) : IO String := do
+def checkLeanSourceAtPaths (searchPath : List System.FilePath) (input : String) : IO String := do
   try
-    searchPathRef.set [System.FilePath.mk bundleRoot / "lib" / "lean"]
+    unsafe enableInitializersExecution
+    searchPathRef.set searchPath
     let opts := Options.empty
     let inputCtx := Parser.mkInputContext input "<input>"
     let setup stx := do
@@ -36,3 +36,7 @@ def checkLeanSource (bundleRoot : @& String) (input : @& String) : IO String := 
     pure rendered
   catch e =>
     pure s!"{e}"
+
+@[export checkLeanSource]
+def checkLeanSource (bundleRoot : String) (input : String) : IO String :=
+  checkLeanSourceAtPaths [System.FilePath.mk bundleRoot / "lib" / "lean"] input

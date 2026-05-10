@@ -5,8 +5,19 @@ defaultTargets = ["LeanIOSRunner"]
 [leanOptions]
 autoImplicit = false
 
+[[require]]
+name = "batteries"
+git = "https://github.com/leanprover-community/batteries"
+rev = "v4.29.0"
+
 [[lean_lib]]
 name = "LeanIOSRunner"
 srcDir = "lean"
 roots = ["Runner"]
 defaultFacets = ["static"]
+
+[[lean_exe]]
+name = "TestRunner"
+srcDir = "tests"
+root = "TestRunner"
+supportInterpreter = true

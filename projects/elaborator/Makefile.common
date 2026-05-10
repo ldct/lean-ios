@@ -28,6 +28,17 @@ HOST_OLEAN_CACHE_DIR := $(BUILD_DIR)/host-oleans/$(LEAN4_IOS_ARTIFACT_TAG)-$(LEA
 HOST_OLEAN_EXTRACT_STAMP := $(HOST_OLEAN_CACHE_DIR)/.extract-stamp
 HOST_OLEAN_DIR := $(HOST_OLEAN_CACHE_DIR)/lean4-host-oleans-macos/lib/lean
 
+BATTERIES_RELEASE_REPO ?= ldct/lean-ios
+BATTERIES_RELEASE_TAG ?= batteries-oleans
+BATTERIES_REV ?= 48ff08a0e30a
+BATTERIES_ARCHIVE_NAME := batteries-oleans-$(BATTERIES_REV)-lean$(LEAN4_OLEANS_REV).tar.zst
+BATTERIES_URL := https://github.com/$(BATTERIES_RELEASE_REPO)/releases/download/$(BATTERIES_RELEASE_TAG)/$(BATTERIES_ARCHIVE_NAME)
+BATTERIES_DOWNLOAD_DIR := $(BUILD_DIR)/downloads
+BATTERIES_ARCHIVE := $(BATTERIES_DOWNLOAD_DIR)/$(BATTERIES_ARCHIVE_NAME)
+BATTERIES_CACHE_DIR := $(BUILD_DIR)/batteries-oleans/$(BATTERIES_REV)-lean$(LEAN4_OLEANS_REV)
+BATTERIES_EXTRACT_STAMP := $(BATTERIES_CACHE_DIR)/.extract-stamp
+BATTERIES_OLEAN_DIR := $(BATTERIES_CACHE_DIR)/batteries-oleans/lib/lean
+
 APP_LEAN_DIR := lean
 APP_NATIVE_DIR := native
 APP_BUILD_DIR := $(BUILD_DIR)/ios-elab-app-$(IOS_TARGET_TAG)
@@ -40,6 +51,8 @@ APP_LAUNCH_STORYBOARD_SRC := $(APP_NATIVE_DIR)/App/LaunchScreen.storyboard
 APP_LAUNCH_STORYBOARD_DEST := $(APP_DIR)/LaunchScreen.storyboard
 APP_LEAN_LIB_DIR := $(APP_DIR)/lib/lean
 APP_LEAN_LIB_STAMP := $(APP_DIR)/.lean-lib-stamp
+APP_BATTERIES_BUILD_LIB := .lake/packages/batteries/.lake/build/lib/lean
+APP_BATTERIES_STAMP := $(APP_DIR)/.batteries-lib-stamp
 APP_LIB_TARGET := LeanIOSRunner:static
 APP_LAKE_BUILD_DIR := .lake/build
 APP_STATIC_LIB := $(APP_BUILD_DIR)/libLeanIOSRunner.a
@@ -49,7 +62,7 @@ APP_BRIDGE_OBJ := $(APP_OBJ_DIR)/LeanIOSBridge.o
 APP_MAIN_SRC := $(APP_NATIVE_DIR)/App/main.swift
 APP_INFO_PLIST_SRC := $(APP_NATIVE_DIR)/App/Info.plist
 
-.PHONY: runtime app-lib app clean
+.PHONY: runtime app-lib app clean test
 
 runtime:
 	$(MAKE) -C $(ROOT_DIR) IOS_SDK="$(IOS_SDK)" IOS_TARGET="$(IOS_TARGET)" IOS_DEPLOYMENT_TARGET="$(IOS_DEPLOYMENT_TARGET)" runtime stdlib-init stdlib-std stdlib-lean
@@ -131,6 +144,21 @@ $(APP_LEAN_LIB_STAMP): $(HOST_OLEAN_EXTRACT_STAMP)
 	rsync -a --delete $(HOST_OLEAN_DIR)/ $(APP_LEAN_LIB_DIR)/
 	touch $(APP_LEAN_LIB_STAMP)
 
+$(BATTERIES_ARCHIVE):
+	mkdir -p $(BATTERIES_DOWNLOAD_DIR)
+	curl -fL --retry 3 --output $(BATTERIES_ARCHIVE) $(BATTERIES_URL)
+
+$(BATTERIES_EXTRACT_STAMP): $(BATTERIES_ARCHIVE)
+	rm -rf $(BATTERIES_CACHE_DIR)
+	mkdir -p $(BATTERIES_CACHE_DIR)
+	zstd -d -c $(BATTERIES_ARCHIVE) | tar -xf - -C $(BATTERIES_CACHE_DIR)
+	test -f $(BATTERIES_OLEAN_DIR)/Batteries.olean
+	touch $(BATTERIES_EXTRACT_STAMP)
+
+$(APP_BATTERIES_STAMP): $(APP_LEAN_LIB_STAMP) $(BATTERIES_EXTRACT_STAMP)
+	rsync -a $(BATTERIES_OLEAN_DIR)/ $(APP_LEAN_LIB_DIR)/
+	touch $(APP_BATTERIES_STAMP)
+
 $(APP_INFO_PLIST): $(APP_INFO_PLIST_SRC)
 	mkdir -p $(APP_DIR)
 	cp $(APP_INFO_PLIST_SRC) $(APP_INFO_PLIST)
@@ -139,7 +167,17 @@ $(APP_LAUNCH_STORYBOARD_DEST): $(APP_LAUNCH_STORYBOARD_SRC)
 	mkdir -p $(APP_DIR)
 	cp $(APP_LAUNCH_STORYBOARD_SRC) $(APP_LAUNCH_STORYBOARD_DEST)
 
-app: $(APP_BIN) $(APP_INFO_PLIST) $(APP_LAUNCH_STORYBOARD_DEST) $(APP_LEAN_LIB_STAMP)
+app: $(APP_BIN) $(APP_INFO_PLIST) $(APP_LAUNCH_STORYBOARD_DEST) $(APP_LEAN_LIB_STAMP) $(APP_BATTERIES_STAMP)
 
 clean:
 	rm -rf $(APP_BUILD_DIR) $(APP_LAKE_BUILD_DIR)
+
+# Host-side test that exercises checkLeanSource via `lake exe TestRunner`.
+# Wipes lake build state because the iOS app target leaves cross-compiled
+# artifacts behind, then rebuilds for the host (including Batteries oleans
+# the test feeds into the elaborator search path) and runs the test.
+test:
+	lake clean
+	lake build Batteries:leanArts
+	lake build TestRunner
+	TEST_BATTERIES_LIB_DIR="$$PWD/$(APP_BATTERIES_BUILD_LIB)" lake exe TestRunner
