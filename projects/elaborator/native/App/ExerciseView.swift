@@ -33,47 +33,60 @@ enum CheckState {
 struct ExerciseView: View {
   let exercise: Exercise
   @State private var source: String = ""
+  @State private var input: String = ""
   @State private var state: CheckState = .idle
   @State private var isRunning = false
+
+  private static let sourceLineHeight: CGFloat = 22
 
   var body: some View {
     ZStack {
       Color(.systemGroupedBackground).ignoresSafeArea()
-      VStack(alignment: .leading, spacing: 18) {
-        Button(action: runCheck) {
-          Text("Run")
-            .font(.system(size: 15, weight: .bold, design: .rounded))
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(.white)
-        .background(Color.orange)
-        .clipShape(Capsule())
-        .disabled(isRunning)
-        .opacity(isRunning ? 0.7 : 1.0)
-
-        VStack(alignment: .leading, spacing: 10) {
+      VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 8) {
           panelHeader("Source")
-          TextEditor(text: $source)
-            .font(.system(size: 15, design: .monospaced))
-            .disableAutocorrection(true)
-            .textInputAutocapitalization(.never)
-            .scrollContentBackground(.hidden)
-            .padding(14)
-            .frame(minHeight: 160, maxHeight: .infinity)
-            .background(Color(.systemBackground))
+          ScrollView {
+            Text(source)
+              .font(.system(size: 14, design: .monospaced))
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .padding(12)
+              .textSelection(.enabled)
+          }
+          .frame(height: 5 * Self.sourceLineHeight + 24)
+          .background(Color(.systemBackground))
         }
 
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
           panelHeader("State")
           ScrollView {
             VStack(alignment: .leading, spacing: 12) { stateView }
               .frame(maxWidth: .infinity, alignment: .leading)
               .padding(14)
           }
-          .frame(minHeight: 220, maxHeight: .infinity)
+          .frame(maxHeight: .infinity)
           .background(Color(.systemBackground))
+        }
+
+        HStack(spacing: 8) {
+          TextField("next tactic", text: $input)
+            .textFieldStyle(.roundedBorder)
+            .font(.system(size: 15, design: .monospaced))
+            .autocorrectionDisabled()
+            .textInputAutocapitalization(.never)
+            .onSubmit(send)
+            .disabled(isRunning)
+          Button(action: send) {
+            Text("Run")
+              .font(.system(size: 15, weight: .bold, design: .rounded))
+              .padding(.horizontal, 16)
+              .padding(.vertical, 10)
+          }
+          .buttonStyle(.plain)
+          .foregroundStyle(.white)
+          .background(Color.orange)
+          .clipShape(Capsule())
+          .disabled(isRunning)
+          .opacity(isRunning ? 0.7 : 1.0)
         }
       }
       .padding(20)
@@ -83,8 +96,23 @@ struct ExerciseView: View {
     .onAppear {
       if source.isEmpty {
         source = exercise.initialSource
+        runCheck()
       }
     }
+  }
+
+  private func send() {
+    let tactic = input.trimmingCharacters(in: .whitespacesAndNewlines)
+    if !tactic.isEmpty {
+      let donePattern = "  done\n"
+      if let range = source.range(of: donePattern, options: .backwards) {
+        source.replaceSubrange(range, with: "  \(tactic)\n  done\n")
+      } else {
+        source.append("  \(tactic)\n")
+      }
+      input = ""
+    }
+    runCheck()
   }
 
   @ViewBuilder
