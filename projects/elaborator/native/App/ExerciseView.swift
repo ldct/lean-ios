@@ -38,6 +38,10 @@ struct ExerciseView: View {
   @State private var isRunning = false
 
   private static let sourceLineHeight: CGFloat = 22
+  private static let tactics: [String] = [
+    "intro", "exact", "apply", "assumption", "cases",
+    "constructor", "left", "right", "have", "refine", "rfl"
+  ]
 
   var body: some View {
     ZStack {
@@ -75,6 +79,24 @@ struct ExerciseView: View {
             .textInputAutocapitalization(.never)
             .onSubmit(send)
             .disabled(isRunning)
+            .toolbar {
+              ToolbarItemGroup(placement: .keyboard) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                  HStack(spacing: 6) {
+                    ForEach(Self.tactics, id: \.self) { t in
+                      Button(action: { insert(t) }) {
+                        Text(t)
+                          .font(.system(size: 14, design: .monospaced))
+                          .padding(.horizontal, 10)
+                          .padding(.vertical, 4)
+                      }
+                      .buttonStyle(.bordered)
+                    }
+                  }
+                  .padding(.horizontal, 4)
+                }
+              }
+            }
           Button(action: send) {
             Text("Run")
               .font(.system(size: 15, weight: .bold, design: .rounded))
@@ -99,6 +121,13 @@ struct ExerciseView: View {
         runCheck()
       }
     }
+  }
+
+  private func insert(_ tactic: String) {
+    if !input.isEmpty && !input.hasSuffix(" ") {
+      input += " "
+    }
+    input += tactic + " "
   }
 
   private func send() {
