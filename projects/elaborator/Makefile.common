@@ -59,7 +59,7 @@ APP_STATIC_LIB := $(APP_BUILD_DIR)/libLeanIOSRunner.a
 APP_BRIDGE_SRC := $(APP_NATIVE_DIR)/LeanIOSBridge.cpp
 APP_BRIDGE_HEADER := $(APP_NATIVE_DIR)/LeanIOSBridge.h
 APP_BRIDGE_OBJ := $(APP_OBJ_DIR)/LeanIOSBridge.o
-APP_MAIN_SRC := $(APP_NATIVE_DIR)/App/main.swift
+APP_SWIFT_SRCS := $(wildcard $(APP_NATIVE_DIR)/App/*.swift)
 APP_INFO_PLIST_SRC := $(APP_NATIVE_DIR)/App/Info.plist
 
 .PHONY: runtime app-lib app clean test
@@ -104,7 +104,7 @@ $(APP_BRIDGE_OBJ): $(APP_BRIDGE_SRC) $(APP_BRIDGE_HEADER)
 	  -c $(APP_BRIDGE_SRC) \
 	  -o $(APP_BRIDGE_OBJ)
 
-$(APP_BIN): app-lib $(APP_BRIDGE_OBJ) $(APP_MAIN_SRC)
+$(APP_BIN): app-lib $(APP_BRIDGE_OBJ) $(APP_SWIFT_SRCS)
 	mkdir -p $(APP_DIR) $(APP_MODULE_CACHE_DIR)
 	xcrun --sdk $(IOS_SDK) swiftc \
 	  -parse-as-library \
@@ -112,7 +112,7 @@ $(APP_BIN): app-lib $(APP_BRIDGE_OBJ) $(APP_MAIN_SRC)
 	  -sdk $(IOS_SDK_PATH) \
 	  -module-cache-path $(APP_MODULE_CACHE_DIR) \
 	  -import-objc-header $(APP_BRIDGE_HEADER) \
-	  $(APP_MAIN_SRC) \
+	  $(APP_SWIFT_SRCS) \
 	  $(APP_STATIC_LIB) \
 	  $(APP_BRIDGE_OBJ) \
 	  $(STDLIB_INIT_LIB) \
