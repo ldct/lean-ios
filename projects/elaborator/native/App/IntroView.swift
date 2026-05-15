@@ -340,24 +340,141 @@ private enum IntroPalette {
   static let tactic = Color(red: 0.42, green: 0.32, blue: 0.78)
 }
 
-// MARK: - Tactic reference (placeholder)
+// MARK: - Tactic reference
+
+private struct TacticEntry {
+  let name: String
+  let description: String
+}
+
+private let tacticEntries: [TacticEntry] = [
+  TacticEntry(
+    name: "apply",
+    description: "The `apply` tactic can be used when the goal matches the conclusion of an implication or the output type of a function. For example if the goal is `Q` and there is a hypothesis `h : P → Q`, then `apply h` updates the goal to `P`. If the goal is `T` and there is a hypothesis `e : R → S → T`, then `apply e` produces two subgoals, one each for `R` and `S`."
+  ),
+  TacticEntry(
+    name: "assumption",
+    description: "The `assumption` tactic tries to solve the main goal using a hypothesis of compatible type, or else fails."
+  ),
+  TacticEntry(
+    name: "cases",
+    description: "Assuming `x` is a variable in the local context with an inductive type, `cases x` splits the main goal, producing one goal for each constructor of the inductive type, in which the target is replaced by a general instance of that constructor. If the type of an element in the local context depends on `x`, that element is reverted and reintroduced afterward, so that the case split affects that hypothesis as well. `cases` detects unreachable cases and closes them automatically.\n\nFor example, given an assumption `h : P ∨ Q`, `cases h` splits the main goal into two goals, one assuming `P` holds and the other assuming `Q` holds."
+  ),
+  TacticEntry(
+    name: "constructor",
+    description: "The `constructor` tactic can be used when the goal is a conjunction (among other settings) to split the goal into cases."
+  ),
+  TacticEntry(
+    name: "exact",
+    description: "If there is an assumption `e : E` and the goal has type `E`, then `exact e` closes the goal."
+  ),
+  TacticEntry(
+    name: "exfalso",
+    description: "If the goal is to prove a proposition `P`, then the tactic `exfalso` applies the implication `False.elim : False → P` to reduce to the goal of proving `False`."
+  ),
+  TacticEntry(
+    name: "ext",
+    description: "The `ext` tactic can be used to apply function extensionality, changing a goal involving proving equality between functions `f g : A → B` into a goal of proving `f x = g x` for an arbitrary `x : A`. The `ext` tactic  applies similar extensionality lemmas that have been proven for other types."
+  ),
+  TacticEntry(
+    name: "have",
+    description: "The `have` tactic can be used to add new hypotheses provided you can supply a proof. For example, given assumptions `p : P` and `h : P → Q`, type `have q : Q := h p` to add a proof `q : Q` defined by `h p`."
+  ),
+  TacticEntry(
+    name: "induction",
+    description: "## Summary\n\nIf `n : ℕ` is an object, and the goal mentions `n`, then `induction n with d hd`\nattempts to prove the goal by induction on `n`, with the inductive\nvariable in the successor case being `d`, and the inductive hypothesis being `hd`.\n\n### Example:\nIf the goal is\n```\n0 + n = n\n```\n\nthen\n\n`induction n with d hd`\n\nwill turn it into two goals. The first is `0 + 0 = 0`;\nthe second has an assumption `hd : 0 + d = d` and goal\n`0 + succ d = succ d`.\n\nNote that you must prove the first\ngoal before you can access the second one."
+  ),
+  TacticEntry(
+    name: "intro",
+    description: "The `intro` tactic, short for *introduction*, is used to introduce one or more hypotheses when the goal is a function type or an implication. It can be used by itself or followed by names for those hypotheses. For example, when the goal is `P → Q`, type `intro p` to add an assumption `p : P` and update the goal to `Q`. When the goal is `P → Q → R`, type `intro p q` to add assumptions `p : P` and `q : Q` and update the goal to `R`."
+  ),
+  TacticEntry(
+    name: "left",
+    description: "For propositions `P` and `Q`, the `left` tactic converts a goal of `P ∨ Q` to a goal of `P`. For types `A` and `B`, the `left` tactic converts a goal of `A ⊕ B` into a goal of `A`."
+  ),
+  TacticEntry(
+    name: "let",
+    description: "The `let` tactic is like `have`, but for creating elements of types rather than proofs of propositions. The `let` tactic will add new elements to your context provided you can define them. For example, given elements `a : A` and `b : B`, you can type `let p : A × B := ⟨a, b⟩` to add their pair to the context or type `let f : A → B := fun _ ↦ b` to add the constant function at `b` to the context."
+  ),
+  TacticEntry(
+    name: "match",
+    description: "The tactic `match` can be used to define a function by cases. For example, in the context of an\nelement `b : Bool`, `match b with | false => ? | true => ?` splits the construction into the case where `b` is false followed by the case where `b` is true. Here both `?` should be replaced by the appropriate sequence of tactics for each case, using semicolons if more than one tactic is needed. In the context of `x y : Bool`,\n`match x y with | false, false => ? | false, true => ? | true, false => ? | true, true => ?` splits into the four possible cases."
+  ),
+  TacticEntry(
+    name: "rcases",
+    description: "`rcases` is a tactic that will perform `cases` recursively, according to a pattern. One use is to provide explicit names for variables in each subgoal. For example, given a hypothesis `h : P ∨ Q`, `rcases h with p | q` can be used in place of `cases h` to give hypotheses `p : P` in the first case and `q : Q`."
+  ),
+  TacticEntry(
+    name: "rfl",
+    description: "The tactic `rfl` tries to solve a goal whose type is an equality where the left hand side and right hand side are equal by definition."
+  ),
+  TacticEntry(
+    name: "right",
+    description: "For propositions `P` and `Q`, the `right` tactic converts a goal of `P ∨ Q` to a goal of `Q`. For types `A` and `B`, the `right` tactic converts a goal of `A ⊕ B` into a goal of `B`."
+  ),
+  TacticEntry(
+    name: "rw",
+    description: "Given a hypothesis `p : x = y`, the tactic `rw [p]` will replace each `x` in the goal by `y`. Writing `rw [← p]` will replace the each `y` in the goal by `x`. This is a slightly less powerful version than the `rw` tactic in Mathlib, which will attempt to close the goal with `rfl`."
+  ),
+  TacticEntry(
+    name: "use",
+    description: "For goals of the form `∃ (x : A), P x` the tactic `use` can be used to provide an element `a : A` which will satisfy `P a`. For multiple constructors like `∃ (x y : A), P x y`, you can provide comma-separated values: `use a, a'`.\n\nNote that the version of the `use` tactic for this game is somewhat weaker than the real one in Mathlib, which automatically tries to solve the remaining goal."
+  ),
+]
+
+private func tacticDescriptionAttributed(_ s: String) -> AttributedString {
+  var result = AttributedString("")
+  // Split on backticks: tokens at odd indices are inline code.
+  let parts = s.components(separatedBy: "`")
+  for (i, part) in parts.enumerated() {
+    var piece = AttributedString(part)
+    if i % 2 == 1 {
+      piece.font = .system(size: 15, weight: .regular, design: .monospaced)
+      piece.foregroundColor = Color(red: 0.18, green: 0.18, blue: 0.22)
+    } else {
+      piece.font = .system(size: 15, weight: .regular, design: .default)
+      piece.foregroundColor = .primary
+    }
+    result += piece
+  }
+  return result
+}
 
 struct TacticReferenceView: View {
   @Environment(\.dismiss) private var dismiss
+  private let tacticColor = Color(red: 0.42, green: 0.32, blue: 0.78)
+
   var body: some View {
     ZStack(alignment: .topTrailing) {
       Color(.systemGroupedBackground).ignoresSafeArea()
-      VStack(spacing: 12) {
-        Spacer()
-        Image(systemName: "rectangle.split.2x1")
-          .font(.system(size: 36))
-          .foregroundStyle(.secondary)
-        Text("Tactic reference WIP")
-          .font(.system(size: 18, weight: .semibold, design: .rounded))
-          .foregroundStyle(.secondary)
-        Spacer()
+      ScrollView {
+        VStack(alignment: .leading, spacing: 16) {
+          Text("TACTICS")
+            .font(.system(size: 12, weight: .bold, design: .rounded))
+            .tracking(1.4)
+            .foregroundStyle(.secondary)
+            .padding(.top, 8)
+          ForEach(Array(tacticEntries.enumerated()), id: \.offset) { idx, entry in
+            VStack(alignment: .leading, spacing: 6) {
+              Text(entry.name)
+                .font(.system(size: 17, weight: .bold, design: .monospaced))
+                .foregroundStyle(tacticColor)
+              Text(tacticDescriptionAttributed(entry.description))
+                .fixedSize(horizontal: false, vertical: true)
+                .multilineTextAlignment(.leading)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 10)
+            if idx < tacticEntries.count - 1 {
+              Divider()
+            }
+          }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 56)
+        .padding(.bottom, 24)
+        .frame(maxWidth: .infinity, alignment: .leading)
       }
-      .frame(maxWidth: .infinity)
       Button(action: { dismiss() }) {
         Image(systemName: "xmark")
           .font(.system(size: 15, weight: .bold))
