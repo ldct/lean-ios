@@ -422,70 +422,201 @@ private let tacticEntries: [TacticEntry] = [
   ),
 ]
 
-private func tacticDescriptionAttributed(_ s: String) -> AttributedString {
-  var result = AttributedString("")
-  // Split on backticks: tokens at odd indices are inline code.
+private enum TacticDescItem {
+  case word(String)
+  case pill(String)
+}
+
+private func parseTacticDescription(_ s: String) -> [TacticDescItem] {
   let parts = s.components(separatedBy: "`")
+  var out: [TacticDescItem] = []
   for (i, part) in parts.enumerated() {
-    var piece = AttributedString(part)
-    if i % 2 == 1 {
-      piece.font = .system(size: 15, weight: .regular, design: .monospaced)
-      piece.foregroundColor = Color(red: 0.18, green: 0.18, blue: 0.22)
+    if i % 2 == 0 {
+      let cleaned = part.replacingOccurrences(of: "\n", with: " ")
+      for word in cleaned.split(separator: " ", omittingEmptySubsequences: true) {
+        out.append(.word(String(word)))
+      }
     } else {
-      piece.font = .system(size: 15, weight: .regular, design: .default)
-      piece.foregroundColor = .primary
+      out.append(.pill(part))
     }
-    result += piece
   }
-  return result
+  return out
+}
+
+private let tacticNames: Set<String> = Set(tacticEntries.map { $0.name })
+
+private func isTacticUsage(_ s: String) -> Bool {
+  let firstWord = s.split(separator: " ").first.map(String.init) ?? ""
+  return tacticNames.contains(firstWord)
 }
 
 struct TacticReferenceView: View {
   @Environment(\.dismiss) private var dismiss
+  @State private var query: String = ""
+  @State private var expanded: Set<String> = ["intro", "exact"]
+
   private let tacticColor = Color(red: 0.42, green: 0.32, blue: 0.78)
+  private let cardStroke = Color(.systemGray5)
+  private let expandedCream = Color(red: 0.99, green: 0.96, blue: 0.93)
+
+  private var filtered: [TacticEntry] {
+    let q = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    if q.isEmpty { return tacticEntries }
+    return tacticEntries.filter {
+      $0.name.lowercased().contains(q) || $0.description.lowercased().contains(q)
+    }
+  }
 
   var body: some View {
-    ZStack(alignment: .topTrailing) {
+    ZStack {
       Color(.systemGroupedBackground).ignoresSafeArea()
-      ScrollView {
-        VStack(alignment: .leading, spacing: 16) {
-          Text("TACTICS")
-            .font(.system(size: 12, weight: .bold, design: .rounded))
-            .tracking(1.4)
-            .foregroundStyle(.secondary)
-            .padding(.top, 8)
-          ForEach(Array(tacticEntries.enumerated()), id: \.offset) { idx, entry in
-            VStack(alignment: .leading, spacing: 6) {
-              Text(entry.name)
-                .font(.system(size: 17, weight: .bold, design: .monospaced))
-                .foregroundStyle(tacticColor)
-              Text(tacticDescriptionAttributed(entry.description))
-                .fixedSize(horizontal: false, vertical: true)
-                .multilineTextAlignment(.leading)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 10)
-            if idx < tacticEntries.count - 1 {
-              Divider()
+      VStack(spacing: 12) {
+        topBar
+        searchBar
+        ScrollView {
+          VStack(spacing: 10) {
+            ForEach(filtered, id: \.name) { entry in
+              tacticCard(entry)
             }
           }
+          .padding(.horizontal, 16)
+          .padding(.bottom, 24)
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 56)
-        .padding(.bottom, 24)
-        .frame(maxWidth: .infinity, alignment: .leading)
       }
+      .padding(.top, 8)
+    }
+  }
+
+  private var topBar: some View {
+    HStack(alignment: .center, spacing: 12) {
       Button(action: { dismiss() }) {
-        Image(systemName: "xmark")
-          .font(.system(size: 15, weight: .bold))
+        Image(systemName: "chevron.left")
+          .font(.system(size: 16, weight: .bold))
           .foregroundStyle(.primary)
           .frame(width: 38, height: 38)
           .background(Color(.systemBackground))
           .clipShape(Circle())
-          .overlay(Circle().stroke(Color(.systemGray5), lineWidth: 1))
+          .overlay(Circle().stroke(cardStroke, lineWidth: 1))
       }
-      .padding(.top, 12)
-      .padding(.trailing, 16)
+      .buttonStyle(.plain)
+      VStack(alignment: .leading, spacing: 2) {
+        Text("REFERENCE")
+          .font(.system(size: 11, weight: .semibold, design: .rounded))
+          .tracking(0.6)
+          .foregroundStyle(.secondary)
+        Text("Tactics")
+          .font(.system(size: 22, weight: .bold, design: .rounded))
+      }
+      Spacer()
+      Image(systemName: "flag")
+        .font(.system(size: 15, weight: .semibold))
+        .foregroundStyle(.primary)
+        .frame(width: 38, height: 38)
+        .background(Color(.systemBackground))
+        .clipShape(Circle())
+        .overlay(Circle().stroke(cardStroke, lineWidth: 1))
+    }
+    .padding(.horizontal, 16)
+  }
+
+  private var searchBar: some View {
+    HStack(spacing: 8) {
+      Image(systemName: "magnifyingglass")
+        .font(.system(size: 14, weight: .semibold))
+        .foregroundStyle(.secondary)
+      TextField("Search \(tacticEntries.count) tactics", text: $query)
+        .textFieldStyle(.plain)
+        .autocorrectionDisabled()
+        .textInputAutocapitalization(.never)
+      Text("⌘K")
+        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+        .foregroundStyle(.secondary)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 3)
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+    }
+    .padding(.horizontal, 14)
+    .padding(.vertical, 12)
+    .background(Color(.systemBackground))
+    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    .overlay(
+      RoundedRectangle(cornerRadius: 14, style: .continuous)
+        .stroke(cardStroke, lineWidth: 1)
+    )
+    .padding(.horizontal, 16)
+  }
+
+  private func tacticCard(_ entry: TacticEntry) -> some View {
+    let isExpanded = expanded.contains(entry.name)
+    return VStack(alignment: .leading, spacing: 0) {
+      Button(action: {
+        if isExpanded { expanded.remove(entry.name) }
+        else { expanded.insert(entry.name) }
+      }) {
+        HStack(spacing: 12) {
+          Text("λ")
+            .font(.system(size: 16, design: .monospaced))
+            .foregroundStyle(.primary)
+            .frame(width: 32, height: 32)
+            .background(Color(.systemGray6))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+          Text(entry.name)
+            .font(.system(size: 17, weight: .semibold, design: .monospaced))
+            .foregroundStyle(.primary)
+          Spacer()
+          if !isExpanded {
+            Image(systemName: "chevron.down")
+              .font(.system(size: 13, weight: .semibold))
+              .foregroundStyle(.secondary)
+          }
+        }
+        .padding(14)
+      }
+      .buttonStyle(.plain)
+
+      if isExpanded {
+        Divider().padding(.horizontal, 14)
+        descriptionFlow(entry.description)
+          .padding(14)
+      }
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(isExpanded ? expandedCream : Color(.systemBackground))
+    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    .overlay(
+      RoundedRectangle(cornerRadius: 14, style: .continuous)
+        .stroke(cardStroke, lineWidth: 1)
+    )
+  }
+
+  private func descriptionFlow(_ s: String) -> some View {
+    FlowLayout(spacing: 4, lineSpacing: 6) {
+      ForEach(Array(parseTacticDescription(s).enumerated()), id: \.offset) { _, item in
+        descriptionItem(item)
+      }
+    }
+  }
+
+  @ViewBuilder
+  private func descriptionItem(_ item: TacticDescItem) -> some View {
+    switch item {
+    case .word(let w):
+      Text(w)
+        .font(.system(size: 15))
+        .foregroundStyle(.primary)
+    case .pill(let p):
+      Text(p)
+        .font(.system(size: 14, design: .monospaced))
+        .foregroundStyle(isTacticUsage(p) ? tacticColor : .primary)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 2)
+        .background(Color(.systemBackground))
+        .overlay(
+          RoundedRectangle(cornerRadius: 6, style: .continuous)
+            .stroke(cardStroke, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
     }
   }
 }
