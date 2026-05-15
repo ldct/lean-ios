@@ -16,6 +16,10 @@ struct Exercise: Identifiable, Hashable {
   let initialSource: String
 }
 
+struct ProofPath: Hashable {
+  let exercise: Exercise
+}
+
 struct WorldGroup: Identifiable {
   let world: String
   let exercises: [Exercise]
@@ -424,8 +428,9 @@ let worldGroups: [WorldGroup] = {
 }()
 
 struct RootView: View {
+  @State private var path = NavigationPath()
   var body: some View {
-    NavigationStack {
+    NavigationStack(path: $path) {
       List {
         ForEach(worldGroups) { group in
           Section(group.world) {
@@ -448,7 +453,10 @@ struct RootView: View {
       }
       .navigationTitle("iOS Lean")
       .navigationDestination(for: Exercise.self) { ex in
-        ExerciseView(exercise: ex)
+        IntroView(exercise: ex, mode: .lesson)
+      }
+      .navigationDestination(for: ProofPath.self) { p in
+        ExerciseView(exercise: p.exercise, path: $path)
       }
     }
   }

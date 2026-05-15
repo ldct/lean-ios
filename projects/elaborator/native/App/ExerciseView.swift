@@ -42,11 +42,13 @@ private enum Palette {
 
 struct ExerciseView: View {
   let exercise: Exercise
+  @Binding var path: NavigationPath
   @State private var source: String = ""
   @State private var input: String = ""
   @State private var state: CheckState = .idle
   @State private var isRunning = false
-  @Environment(\.dismiss) private var dismiss
+  @State private var showingIntro = false
+  @State private var showingReference = false
 
   private static let tactics: [String] = [
     "intro", "intros", "exact", "apply", "rfl",
@@ -62,6 +64,7 @@ struct ExerciseView: View {
         sourceSection
         stateSection
         Spacer(minLength: 0)
+        hintRow
         if hasTacticPrefix {
           constantsRow
           freeRow
@@ -80,13 +83,41 @@ struct ExerciseView: View {
         runCheck()
       }
     }
+    .sheet(isPresented: $showingIntro) {
+      IntroView(exercise: exercise, mode: .review)
+    }
+    .sheet(isPresented: $showingReference) {
+      TacticReferenceView()
+    }
+  }
+
+  private var hintRow: some View {
+    HStack {
+      Spacer()
+      Button(action: { showingIntro = true }) {
+        HStack(spacing: 5) {
+          Image(systemName: "lightbulb")
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(Palette.accent)
+          Text("Stuck? Hint")
+            .font(.system(size: 14, weight: .semibold, design: .rounded))
+            .foregroundStyle(.primary)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(Color(.systemBackground))
+        .clipShape(Capsule())
+        .overlay(Capsule().stroke(Palette.cardStroke, lineWidth: 1))
+      }
+      .buttonStyle(.plain)
+    }
   }
 
   // MARK: - Top bar
 
   private var topBar: some View {
     HStack(alignment: .center) {
-      Button(action: { dismiss() }) {
+      Button(action: { path = NavigationPath() }) {
         Image(systemName: "chevron.left")
           .font(.system(size: 16, weight: .bold))
           .foregroundStyle(.primary)
@@ -106,14 +137,28 @@ struct ExerciseView: View {
           .foregroundStyle(.primary)
       }
       Spacer()
-      ZStack {
-        Circle().fill(Color(.systemBackground))
-        Circle().stroke(Palette.cardStroke, lineWidth: 1)
-        Image(systemName: "lightbulb")
-          .font(.system(size: 16, weight: .semibold))
-          .foregroundStyle(.primary)
+      HStack(spacing: 8) {
+        Button(action: { showingIntro = true }) {
+          Image(systemName: "info")
+            .font(.system(size: 16, weight: .bold))
+            .foregroundStyle(.primary)
+            .frame(width: 38, height: 38)
+            .background(Color(.systemBackground))
+            .clipShape(Circle())
+            .overlay(Circle().stroke(Palette.cardStroke, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        Button(action: { showingReference = true }) {
+          Image(systemName: "rectangle.split.2x1")
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundStyle(.primary)
+            .frame(width: 38, height: 38)
+            .background(Color(.systemBackground))
+            .clipShape(Circle())
+            .overlay(Circle().stroke(Palette.cardStroke, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
       }
-      .frame(width: 38, height: 38)
     }
   }
 
