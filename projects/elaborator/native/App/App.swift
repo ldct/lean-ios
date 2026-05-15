@@ -14,6 +14,7 @@ struct Exercise: Identifiable, Hashable {
   let title: String
   let world: String
   let initialSource: String
+  var isWorldIntro: Bool = false
 }
 
 struct ProofPath: Hashable {
@@ -413,6 +414,19 @@ let exercises: [Exercise] = [
   ),
 ]
 
+func worldIntroId(for world: String) -> String {
+  switch world {
+  case "Type World": return "typeworld-intro"
+  case "Function World": return "functionworld-intro"
+  case "Implication World": return "implicationworld-intro"
+  case "Product World": return "productworld-intro"
+  case "Conjunction World": return "conjunctionworld-intro"
+  case "Coproduct World": return "coproductworld-intro"
+  case "Disjunction World": return "disjunctionworld-intro"
+  default: return "\(world.lowercased().replacingOccurrences(of: " ", with: ""))-intro"
+  }
+}
+
 let worldGroups: [WorldGroup] = {
   var groups: [WorldGroup] = []
   for ex in exercises {
@@ -424,7 +438,16 @@ let worldGroups: [WorldGroup] = {
       groups.append(WorldGroup(world: ex.world, exercises: [ex]))
     }
   }
-  return groups
+  return groups.map { group in
+    let intro = Exercise(
+      id: worldIntroId(for: group.world),
+      title: "L00: \(group.world)",
+      world: group.world,
+      initialSource: "",
+      isWorldIntro: true
+    )
+    return WorldGroup(world: group.world, exercises: [intro] + group.exercises)
+  }
 }()
 
 struct RootView: View {

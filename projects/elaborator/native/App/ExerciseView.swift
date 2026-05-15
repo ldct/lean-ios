@@ -184,11 +184,16 @@ struct ExerciseView: View {
     worldGroups
       .first { $0.world == exercise.world }?
       .exercises
+      .filter { !$0.isWorldIntro }
       .firstIndex(of: exercise)
   }
 
   private var lessonsInWorld: Int {
-    worldGroups.first { $0.world == exercise.world }?.exercises.count ?? 0
+    worldGroups
+      .first { $0.world == exercise.world }?
+      .exercises
+      .filter { !$0.isWorldIntro }
+      .count ?? 0
   }
 
   // MARK: - Progress

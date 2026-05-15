@@ -65,16 +65,28 @@ struct IntroView: View {
           .overlay(Circle().stroke(IntroPalette.cardStroke, lineWidth: 1))
       }
       Spacer()
-      HStack(spacing: 5) {
-        Circle().fill(IntroPalette.accent).frame(width: 6, height: 6)
-        Text("\(lessonNumber) / \(totalLessons)")
-          .font(.system(size: 13, weight: .semibold, design: .rounded))
+      if exercise.isWorldIntro {
+        Text("INTRO")
+          .font(.system(size: 11, weight: .bold, design: .rounded))
+          .tracking(0.8)
+          .foregroundStyle(IntroPalette.accent)
+          .padding(.horizontal, 12)
+          .padding(.vertical, 7)
+          .background(Color(.systemBackground))
+          .clipShape(Capsule())
+          .overlay(Capsule().stroke(IntroPalette.cardStroke, lineWidth: 1))
+      } else {
+        HStack(spacing: 5) {
+          Circle().fill(IntroPalette.accent).frame(width: 6, height: 6)
+          Text("\(lessonNumber) / \(totalLessons)")
+            .font(.system(size: 13, weight: .semibold, design: .rounded))
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .background(Color(.systemBackground))
+        .clipShape(Capsule())
+        .overlay(Capsule().stroke(IntroPalette.cardStroke, lineWidth: 1))
       }
-      .padding(.horizontal, 12)
-      .padding(.vertical, 7)
-      .background(Color(.systemBackground))
-      .clipShape(Capsule())
-      .overlay(Capsule().stroke(IntroPalette.cardStroke, lineWidth: 1))
     }
   }
 
@@ -140,22 +152,34 @@ struct IntroView: View {
     }
   }
 
+  @ViewBuilder
   private var startButton: some View {
-    NavigationLink(value: ProofPath(exercise: exercise)) {
-      HStack(spacing: 6) {
-        Text("Start the proof")
-        Image(systemName: "chevron.right")
-          .font(.system(size: 14, weight: .bold))
+    if exercise.isWorldIntro, let next = firstLesson {
+      NavigationLink(value: next) {
+        ctaLabel("Begin level 1")
       }
-      .font(.system(size: 17, weight: .bold, design: .rounded))
-      .foregroundStyle(.white)
-      .frame(maxWidth: .infinity)
-      .padding(.vertical, 16)
-      .background(IntroPalette.accent)
-      .clipShape(Capsule())
-      .shadow(color: IntroPalette.accent.opacity(0.25), radius: 12, y: 4)
+      .buttonStyle(.plain)
+    } else {
+      NavigationLink(value: ProofPath(exercise: exercise)) {
+        ctaLabel("Start the proof")
+      }
+      .buttonStyle(.plain)
     }
-    .buttonStyle(.plain)
+  }
+
+  private func ctaLabel(_ text: String) -> some View {
+    HStack(spacing: 6) {
+      Text(text)
+      Image(systemName: "chevron.right")
+        .font(.system(size: 14, weight: .bold))
+    }
+    .font(.system(size: 17, weight: .bold, design: .rounded))
+    .foregroundStyle(.white)
+    .frame(maxWidth: .infinity)
+    .padding(.vertical, 16)
+    .background(IntroPalette.accent)
+    .clipShape(Capsule())
+    .shadow(color: IntroPalette.accent.opacity(0.25), radius: 12, y: 4)
   }
 
   // MARK: - Derived strings
@@ -179,12 +203,22 @@ struct IntroView: View {
   }
 
   private var lessonNumber: Int {
-    let group = worldGroups.first { $0.world == exercise.world }
-    return (group?.exercises.firstIndex(of: exercise) ?? 0) + 1
+    let lessons = worldGroups
+      .first { $0.world == exercise.world }?
+      .exercises.filter { !$0.isWorldIntro } ?? []
+    return (lessons.firstIndex(of: exercise) ?? 0) + 1
   }
 
   private var totalLessons: Int {
-    worldGroups.first { $0.world == exercise.world }?.exercises.count ?? 0
+    worldGroups
+      .first { $0.world == exercise.world }?
+      .exercises.filter { !$0.isWorldIntro }.count ?? 0
+  }
+
+  private var firstLesson: Exercise? {
+    worldGroups
+      .first { $0.world == exercise.world }?
+      .exercises.first { !$0.isWorldIntro }
   }
 
   private var paragraphs: [IntroParagraph] {
@@ -342,6 +376,533 @@ struct TacticReferenceView: View {
 // MARK: - Authored intro content
 
 let introContent: [String: [IntroParagraph]] = [
+  "typeworld-intro": [
+    IntroParagraph(segments: [
+      .word("In this world, we introduce two primitives:"),
+    ]),
+    IntroParagraph(segments: [
+      .word("•"),
+      .emphasis("types"),
+      .word("denoted with capital variables like"),
+      .identPill("A"),
+      .word("and"),
+      .identPill("B"),
+      .word("and"),
+    ]),
+    IntroParagraph(segments: [
+      .word("•"),
+      .emphasis("elements"),
+      .word("written"),
+      .identPill("x : A"),
+      .word("or"),
+      .identPill("y : B"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("For example, there are types"),
+      .identPill("ℕ"),
+      .word("of natural numbers,"),
+      .identPill("ℤ"),
+      .word("of integers,"),
+      .identPill("ℚ"),
+      .word("of rational numbers,"),
+      .identPill("ℝ"),
+      .word("of real numbers,"),
+      .identPill("ℂ"),
+      .word("of complex numbers, and so on. There are also types of more sophisticated mathematical structures, like vector spaces or groups."),
+    ]),
+    IntroParagraph(segments: [
+      .word("Types can have more than one element. The elements of the type"),
+      .identPill("ℕ"),
+      .word("are the familiar natural numbers:"),
+      .identPill("0 : ℕ"),
+      .word(","),
+      .identPill("1 : ℕ"),
+      .word("and so on."),
+    ]),
+    IntroParagraph(segments: [
+      .word("By contrast, elements belong to unique types. The integer"),
+      .identPill("57"),
+      .word("is distinct from the natural number"),
+      .identPill("57"),
+      .word(". This is one of the reasons why type theory is useful for precise mathematical communication: an element always carries the information of the type that it belongs to."),
+    ]),
+    IntroParagraph(segments: [
+      .word("Mathematical"),
+      .emphasis("propositions"),
+      .word("can be thought of as a special case of types. For propositions"),
+      .identPill("P"),
+      .word("and"),
+      .identPill("Q"),
+      .word(", we think of elements"),
+      .identPill("p : P"),
+      .word("and"),
+      .identPill("q : Q"),
+      .word("as"),
+      .emphasis("proofs"),
+      .word("that these propositions are true."),
+    ]),
+    IntroParagraph(segments: [
+      .word("By contrast, false propositions will not have any elements. In Negation World, we will learn how to prove that a proposition"),
+      .identPill("P"),
+      .word("is false."),
+    ]),
+    IntroParagraph(segments: [
+      .word("What distinguishes propositions from types is the fact that the elements do not contain any information beyond witnessing the truth of the proposition. If"),
+      .identPill("x"),
+      .word("and"),
+      .identPill("y"),
+      .word("are two proofs of a proposition"),
+      .identPill("P"),
+      .word(", then"),
+      .identPill("x"),
+      .word("and"),
+      .identPill("y"),
+      .word("are equal in a sense that will be introduced in Equality World."),
+    ]),
+  ],
+
+  "functionworld-intro": [
+    IntroParagraph(segments: [
+      .word("More complicated types can be constructed from previously-defined types by iteratively applying"),
+      .emphasis("type forming operations"),
+      .word(". The first and arguably most important of these is the type"),
+      .identPill("A → B"),
+      .word("of functions from"),
+      .identPill("A"),
+      .word("to"),
+      .identPill("B"),
+      .word(". An element"),
+      .identPill("f : A → B"),
+      .word("defines a"),
+      .emphasis("function"),
+      .word("from"),
+      .identPill("A"),
+      .word("to"),
+      .identPill("B"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("In this level, we will explain how to define and use functions. Specifically, we will learn rules that describe:"),
+    ]),
+    IntroParagraph(segments: [
+      .word("• How to construct elements of type"),
+      .identPill("A → B"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("• How to use elements of type"),
+      .identPill("A → B"),
+      .word("to construct elements of other types."),
+    ]),
+    IntroParagraph(segments: [
+      .word("The rule for defining elements of type"),
+      .identPill("A → B"),
+      .word("is called the"),
+      .emphasis("introduction rule"),
+      .word("for function types. It provides a strategy that can be used when the goal is a function type."),
+    ]),
+    IntroParagraph(segments: [
+      .word("The rule for using elements of type"),
+      .identPill("A → B"),
+      .word("is called the"),
+      .emphasis("elimination rule"),
+      .word("for function types. It provides a strategy that can be used when the context involves an element of a function type."),
+    ]),
+  ],
+
+  "implicationworld-intro": [
+    IntroParagraph(segments: [
+      .word("We now step away from considerations involving types and their elements and turn our attention to propositions and their proofs."),
+    ]),
+    IntroParagraph(segments: [
+      .word("We begin our study of proofs with"),
+      .emphasis("propositional logic"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("Many mathematical propositions are built out of simpler propositions using logical connectives. The structure of a compound proposition — that is, which connectives appear where — often suggests proof techniques, as we will discover."),
+    ]),
+    IntroParagraph(segments: [
+      .word("To study these connectives, we require"),
+      .emphasis("proposition variables"),
+      .word("— denoted with letters like"),
+      .identPill("P"),
+      .word(","),
+      .identPill("Q"),
+      .word(","),
+      .identPill("R"),
+      .word("— which stand for generic propositions, which may be true or false."),
+    ]),
+    IntroParagraph(segments: [
+      .word("The slogan"),
+      .emphasis("propositions as types"),
+      .word("tells us that we can consider propositions as special cases of"),
+      .emphasis("types"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("We think of the elements"),
+      .identPill("p : P"),
+      .word("and"),
+      .identPill("q : Q"),
+      .word("as"),
+      .emphasis("proofs"),
+      .word("that these propositions are true."),
+    ]),
+    IntroParagraph(segments: [
+      .word("Just as type forming operations can be used to build more complicated types out of existing types,"),
+      .emphasis("logical connectives"),
+      .word("can be used to build more complicated propositions out of existing propositions."),
+    ]),
+    IntroParagraph(segments: [
+      .word("In this level we study the logical connective"),
+      .emphasis("implication"),
+      .word("denoted by"),
+      .identPill("→"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("For arbitrary"),
+      .emphasis("propositions"),
+      .identPill("P"),
+      .word("and"),
+      .identPill("Q"),
+      .word(","),
+      .identPill("P → Q"),
+      .word("is a new proposition asserting that"),
+      .emphasis("if"),
+      .identPill("P"),
+      .emphasis("is true then"),
+      .identPill("Q"),
+      .emphasis("is true"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("To understand how implications work in logic we must learn:"),
+    ]),
+    IntroParagraph(segments: [
+      .word("• How to prove theorems of the form"),
+      .identPill("P → Q"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("• How to use a hypothesis of the form"),
+      .identPill("P → Q"),
+      .word("to prove something else."),
+    ]),
+    IntroParagraph(segments: [
+      .word("We'll learn the rules for proving implications and using implications in the levels that follow."),
+    ]),
+    IntroParagraph(segments: [
+      .word("The introduction and elimination rules for implications precisely mirror the introduction and elimination rules for function types."),
+    ]),
+    IntroParagraph(segments: [
+      .word("This analogy is further emphasized by the fact that we use the same notation for implications"),
+      .identPill("P → Q"),
+      .word("as for function types"),
+      .identPill("A → B"),
+      .word(". The Lean tactics that were introduced to define and work with functions will play an analogous role when proving or using implications."),
+    ]),
+  ],
+
+  "productworld-intro": [
+    IntroParagraph(segments: [
+      .word("In Function World, we learned that for any types"),
+      .identPill("A"),
+      .word("and"),
+      .identPill("B"),
+      .word("there is a new type"),
+      .identPill("A → B"),
+      .word("whose elements"),
+      .identPill("f : A → B"),
+      .word("are"),
+      .emphasis("functions"),
+      .word("from"),
+      .identPill("A"),
+      .word("to"),
+      .identPill("B"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("In this world, we'll meet another binary type forming operation."),
+    ]),
+    IntroParagraph(segments: [
+      .word("Given two types"),
+      .identPill("A"),
+      .word("and"),
+      .identPill("B"),
+      .word(", there is a type"),
+      .identPill("A × B"),
+      .word("called the"),
+      .emphasis("product type"),
+      .word("whose elements"),
+      .identPill("p : A × B"),
+      .word("should be thought of as encoding ordered pairs of elements, one from"),
+      .identPill("A"),
+      .word("and one from"),
+      .identPill("B"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("To understand how products work in type theory we must learn:"),
+    ]),
+    IntroParagraph(segments: [
+      .word("• How to construct elements of type"),
+      .identPill("A × B"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("• How to use elements of type"),
+      .identPill("A × B"),
+      .word("to construct elements of other types."),
+    ]),
+    IntroParagraph(segments: [
+      .word("Like all type forming operations, the product type is characterized by these introduction and elimination rules."),
+    ]),
+  ],
+
+  "conjunctionworld-intro": [
+    IntroParagraph(segments: [
+      .word("The logical connective of"),
+      .emphasis("conjunction"),
+      .word(", denoted by"),
+      .identPill("∧"),
+      .word(", is the mathematical version of"),
+      .emphasis("and"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("For arbitrary propositions"),
+      .identPill("P"),
+      .word("and"),
+      .identPill("Q"),
+      .word(","),
+      .identPill("P ∧ Q"),
+      .word("is a new proposition asserting that"),
+      .identPill("P"),
+      .emphasis("and"),
+      .identPill("Q"),
+      .emphasis("are both true"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("To understand how conjunctions work in logic we must learn:"),
+    ]),
+    IntroParagraph(segments: [
+      .word("• How to prove theorems of the form"),
+      .identPill("P ∧ Q"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("• How to use a hypothesis of the form"),
+      .identPill("P ∧ Q"),
+      .word("to prove something else."),
+    ]),
+    IntroParagraph(segments: [
+      .word("To prove"),
+      .identPill("P ∧ Q"),
+      .word(", one must supply proofs"),
+      .identPill("p : P"),
+      .word("and"),
+      .identPill("q : Q"),
+      .word(", which can be done using the syntax"),
+      .identPill("⟨p,q⟩ : P ∧ Q"),
+      .word(". Use"),
+      .identPill("\\<"),
+      .word("and"),
+      .identPill("\\>"),
+      .word("to type the angle brackets."),
+    ]),
+    IntroParagraph(segments: [
+      .word("If we have a proof"),
+      .identPill("h : P ∧ Q"),
+      .word("then we can extract proofs that"),
+      .identPill("P"),
+      .word("and"),
+      .identPill("Q"),
+      .word("are true using the syntax"),
+      .identPill("h.1 : P"),
+      .word("and"),
+      .identPill("h.2 : Q"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("Like the analogy between function types and implication, there is a close analogy between product types and the logical operation of conjunction."),
+    ]),
+    IntroParagraph(segments: [
+      .word("The reuse of the syntax we first introduced for product types is deliberate, as the introduction and elimination rules for conjunctions precisely mirror those introduced for product types."),
+    ]),
+  ],
+
+  "coproductworld-intro": [
+    IntroParagraph(segments: [
+      .word("Given any types"),
+      .identPill("A"),
+      .word("and"),
+      .identPill("B"),
+      .word("we have studied"),
+    ]),
+    IntroParagraph(segments: [
+      .word("• function types"),
+      .identPill("A → B"),
+      .word("whose elements"),
+      .identPill("f : A → B"),
+      .word("are"),
+      .emphasis("functions"),
+      .word("from"),
+      .identPill("A"),
+      .word("to"),
+      .identPill("B"),
+      .word("and"),
+    ]),
+    IntroParagraph(segments: [
+      .word("• product types"),
+      .identPill("A × B"),
+      .word("whose elements"),
+      .identPill("⟨a, b⟩ : A × B"),
+      .word("are"),
+      .emphasis("pairs"),
+      .word("of elements"),
+      .identPill("a : A"),
+      .word("and"),
+      .identPill("b : B"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("In this world, we'll study another binary type forming operation. Given two types"),
+      .identPill("A"),
+      .word("and"),
+      .identPill("B"),
+      .word(", there is a type"),
+      .identPill("A ⊕ B"),
+      .word("called the"),
+      .emphasis("coproduct type"),
+      .word("which has two varieties of elements:"),
+    ]),
+    IntroParagraph(segments: [
+      .word("• elements"),
+      .identPill("a : A"),
+      .word("define elements"),
+      .identPill("Sum.inl a : A ⊕ B"),
+    ]),
+    IntroParagraph(segments: [
+      .word("• elements"),
+      .identPill("b : B"),
+      .word("define elements"),
+      .identPill("Sum.inr b : A ⊕ B"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("Together, these constructions define the two"),
+      .emphasis("introduction rules"),
+      .word("for coproduct types. Coproduct types also have an"),
+      .emphasis("elimination rule"),
+      .word(", which gives a strategy for defining a function"),
+      .identPill("f : A ⊕ B → C"),
+      .word("whose inputs belong to a coproduct type and whose outputs take values in an arbitrary type"),
+      .identPill("C"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("This elimination rule tells us that functions out of a coproduct can be defined \"by cases\" — that is, by independently specifying the images of those elements that come from"),
+      .identPill("A"),
+      .word("and those elements that come from"),
+      .identPill("B"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("Collectively, these rules characterize coproduct types and can be used to establish their properties, which we will explore in the levels that follow."),
+    ]),
+  ],
+
+  "disjunctionworld-intro": [
+    IntroParagraph(segments: [
+      .word("The logical connective of"),
+      .emphasis("disjunction"),
+      .word(", denoted by"),
+      .identPill("∨"),
+      .word(", is the mathematical version of"),
+      .emphasis("or"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("For arbitrary propositions"),
+      .identPill("P"),
+      .word("and"),
+      .identPill("Q"),
+      .word(","),
+      .identPill("P ∨ Q"),
+      .word("is a new proposition asserting that at least one of"),
+      .identPill("P"),
+      .emphasis("or"),
+      .identPill("Q"),
+      .emphasis("are true"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("To understand how conjunctions work in logic we must learn:"),
+    ]),
+    IntroParagraph(segments: [
+      .word("• How to prove theorems of the form"),
+      .identPill("P ∨ Q"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("• How to use a hypothesis of the form"),
+      .identPill("P ∨ Q"),
+      .word("to prove something else."),
+    ]),
+    IntroParagraph(segments: [
+      .word("There are two strategies to prove"),
+      .identPill("P ∨ Q"),
+      .word(". It suffices to supply a proof of"),
+      .identPill("P"),
+      .word("and it also suffices to supply a proof of"),
+      .identPill("Q"),
+      .word("."),
+    ]),
+    IntroParagraph(segments: [
+      .word("Note that the mathematical \"or\" is"),
+      .emphasis("inclusive"),
+      .word(", meaning that if"),
+      .identPill("P"),
+      .word("and"),
+      .identPill("Q"),
+      .word("are both true, then"),
+      .identPill("P ∨ Q"),
+      .word("is true."),
+    ]),
+    IntroParagraph(segments: [
+      .word("Together these strategies define the two introduction rules for disjunctions. Note that a proof that employs either of these strategies carries extra information. In addition to concluding that"),
+      .identPill("P ∨ Q"),
+      .word("is true, a proof using the first strategy will prove along the way that"),
+      .identPill("P"),
+      .word("is true (perhaps subject to certain hypotheses) while a proof using the second strategy will prove along the way that"),
+      .identPill("Q"),
+      .word("is true (perhaps subject to other hypotheses)."),
+    ]),
+    IntroParagraph(segments: [
+      .word("Similarly, the construction of an element of a coproduct type via either of the introduction rules will carry the information of whether the element comes from the left-hand type or the right-hand type."),
+    ]),
+    IntroParagraph(segments: [
+      .word("The elimination rule for disjunctions explains how to use a hypothesis"),
+      .identPill("h : P ∨ Q"),
+      .word("to prove something else."),
+    ]),
+    IntroParagraph(segments: [
+      .word("Using a hypothesis"),
+      .identPill("h : P ∨ Q"),
+      .word("leads to a proof strategy of arguing \"by cases\" as we will soon discover."),
+    ]),
+    IntroParagraph(segments: [
+      .word("Like the analogy between function types and implication, and product types and conjunction, there is a close analogy between coproduct types and the logical operation of disjunction."),
+    ]),
+    IntroParagraph(segments: [
+      .word("In particular, we will use similar notations and the same tactics introduced in Coproduct World."),
+    ]),
+  ],
+
   "typeworld-l01-elements": [
     IntroParagraph(segments: [
       .word("An interactive theorem prover — in this case Lean — helps the user — this means you — keep track of the state of a proof or a mathematical construction."),
