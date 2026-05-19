@@ -19,6 +19,13 @@ settings:
     ONLY_ACTIVE_ARCH: NO
     CODE_SIGN_STYLE: Automatic
     ENABLE_USER_SCRIPT_SANDBOXING: NO
+    # Swift's "debug dylib" feature (Xcode 15+) puts app code into a sibling
+    # dylib and leaves the main exec as a stub. That breaks Lean's interpreter
+    # which uses dlsym(RTLD_DEFAULT, ...) to resolve @[extern] symbols — on iOS
+    # device, symbols inside an app-bundled dylib aren't reliably visible to
+    # RTLD_DEFAULT. Disabling forces everything (including the statically
+    # linked Lean archives) into the main executable.
+    ENABLE_DEBUG_DYLIB: NO
 
 targets:
   LeanIOSRunner:
@@ -29,6 +36,7 @@ targets:
       - path: native/App/IntroView.swift
       - path: native/App/ExerciseView.swift
       - path: native/App/LaunchScreen.storyboard
+      - path: native/Assets.xcassets
       - path: native/LeanIOSBridge.h
         buildPhase: none
     settings:
@@ -38,6 +46,7 @@ targets:
         INFOPLIST_FILE: native/App/Info.plist
         SWIFT_OBJC_BRIDGING_HEADER: native/LeanIOSBridge.h
         CLANG_ENABLE_MODULES: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         # LEAN_BUILD_TAG matches the suffix used by the Makefiles for the
         # cross-compiled artifact directories.
         "LEAN_BUILD_TAG[sdk=iphoneos*]": arm64_apple_ios16_0
