@@ -1,0 +1,88 @@
+name: LeanIOSRunner
+
+options:
+  bundleIdPrefix: xuanji
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    SWIFT_VERSION: "5.0"
+    ENABLE_BITCODE: NO
+    TARGETED_DEVICE_FAMILY: "1"
+    SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+    SUPPORTS_MACCATALYST: NO
+    ARCHS: arm64
+    ONLY_ACTIVE_ARCH: NO
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+
+targets:
+  LeanIOSRunner:
+    type: application
+    platform: iOS
+    sources:
+      - path: native/App/App.swift
+      - path: native/App/IntroView.swift
+      - path: native/App/ExerciseView.swift
+      - path: native/App/LaunchScreen.storyboard
+      - path: native/LeanIOSBridge.h
+        buildPhase: none
+    settings:
+      base:
+        PRODUCT_NAME: LeanIOSRunner
+        PRODUCT_BUNDLE_IDENTIFIER: xuanji.lean-games
+        INFOPLIST_FILE: native/App/Info.plist
+        SWIFT_OBJC_BRIDGING_HEADER: native/LeanIOSBridge.h
+        CLANG_ENABLE_MODULES: YES
+        # LEAN_BUILD_TAG matches the suffix used by the Makefiles for the
+        # cross-compiled artifact directories.
+        "LEAN_BUILD_TAG[sdk=iphoneos*]": arm64_apple_ios16_0
+        "LEAN_BUILD_TAG[sdk=iphonesimulator*]": arm64_apple_ios16_0_simulator
+        OTHER_LDFLAGS:
+          - -lc++
+          - -Xlinker
+          - -export_dynamic
+          - "$(SRCROOT)/../../build/ios-elab-app-$(LEAN_BUILD_TAG)/libLeanIOSRunner.a"
+          - "$(SRCROOT)/../../build/ios-elab-app-$(LEAN_BUILD_TAG)/obj/LeanIOSBridge.o"
+          - "$(SRCROOT)/../../build/ios-lean-$(LEAN_BUILD_TAG)/lib/libInit.a"
+          - "$(SRCROOT)/../../build/ios-lean-$(LEAN_BUILD_TAG)/lib/libStd.a"
+          - "$(SRCROOT)/../../build/ios-lean-$(LEAN_BUILD_TAG)/lib/libLean.a"
+          - "$(SRCROOT)/../../build/lean4-$(LEAN_BUILD_TAG)-runtime/lib/lean/libleancpp.a"
+          - "$(SRCROOT)/../../build/lean4-$(LEAN_BUILD_TAG)-runtime/lib/temp/libleanshell.a"
+          - "$(SRCROOT)/../../build/lean4-$(LEAN_BUILD_TAG)-runtime/lib/temp/libleaninitialize.a"
+          - "$(SRCROOT)/../../build/lean4-$(LEAN_BUILD_TAG)-runtime/lib/lean/libleanrt.a"
+    preBuildScripts:
+      - name: Build Lean artifacts via Make
+        script: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+          cd "$PROJECT_DIR"
+          case "$PLATFORM_NAME" in
+            iphoneos)        make -f Makefile.device app ;;
+            iphonesimulator) make -f Makefile.sim    app ;;
+            *) echo "error: unsupported PLATFORM_NAME=$PLATFORM_NAME" >&2; exit 1 ;;
+          esac
+        basedOnDependencyAnalysis: false
+    postBuildScripts:
+      - name: Copy Lean oleans into app bundle
+        script: |
+          set -euo pipefail
+          SRC="$PROJECT_DIR/../../build/ios-elab-app-${LEAN_BUILD_TAG}/LeanIOSRunner.app/lib/lean"
+          DEST="$TARGET_BUILD_DIR/$WRAPPER_NAME/lib/lean"
+          mkdir -p "$DEST"
+          # Apple's App Store validator rejects any file whose name matches a
+          # static library pattern (*.a, *.a.export, *.dylib, *.so, *.o).
+          # Lean ships precompiled native archives alongside its oleans for
+          # `#eval` / native compilation — we only do elaboration so we drop them.
+          rsync -a --delete \
+            --exclude='*.a' \
+            --exclude='*.a.export' \
+            --exclude='*.dylib' \
+            --exclude='*.so' \
+            --exclude='*.o' \
+            "$SRC/" "$DEST/"
+        basedOnDependencyAnalysis: false

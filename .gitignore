@@ -1,3 +1,6 @@
 /build
 .DS_Store
 .lake
+projects/elaborator/LeanIOSRunner.xcodeproj
+xcuserdata/
+*.xcuserstate

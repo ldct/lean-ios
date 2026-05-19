@@ -3,7 +3,7 @@ ROOT_DIR := ../..
 LEAN_SRC_DIR := $(ROOT_DIR)/lean4
 IOS_DEPLOYMENT_TARGET ?= 16.0
 IOS_TARGET_TAG := $(subst -,_,$(subst .,_,$(IOS_TARGET)))
-APP_BUNDLE_ID ?= dev.paulcadman.LeanIOSRunner
+APP_BUNDLE_ID ?= xuanji.lean-games
 APP_NAME := LeanIOSRunner
 
 BUILD_DIR := $(ROOT_DIR)/build
