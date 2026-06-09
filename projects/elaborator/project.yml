@@ -26,6 +26,15 @@ settings:
     # RTLD_DEFAULT. Disabling forces everything (including the statically
     # linked Lean archives) into the main executable.
     ENABLE_DEBUG_DYLIB: NO
+    # The Lean IR interpreter resolves @[extern] declarations via
+    # dlsym(RTLD_DEFAULT, ...). Xcode's Archive install pass strips global
+    # symbols by default, which leaves the runtime code present but the
+    # symbol table empty — every dlsym then fails (TestFlight surfaced this
+    # as "could not find native implementation of … 'IO.getRandomBytes'").
+    # Disable the strip so the dynamic export table keeps the lean_* symbols.
+    STRIP_INSTALLED_PRODUCT: NO
+    STRIP_STYLE: debugging
+    DEPLOYMENT_POSTPROCESSING: NO
 
 targets:
   LeanIOSRunner:
