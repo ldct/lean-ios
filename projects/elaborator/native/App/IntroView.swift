@@ -60,7 +60,7 @@ struct IntroView: View {
           .font(.system(size: 15, weight: .bold))
           .foregroundStyle(.primary)
           .frame(width: 38, height: 38)
-          .background(Color(.systemBackground))
+          .background(IntroPalette.card)
           .clipShape(Circle())
           .overlay(Circle().stroke(IntroPalette.cardStroke, lineWidth: 1))
       }
@@ -72,7 +72,7 @@ struct IntroView: View {
           .foregroundStyle(IntroPalette.accent)
           .padding(.horizontal, 12)
           .padding(.vertical, 7)
-          .background(Color(.systemBackground))
+          .background(IntroPalette.card)
           .clipShape(Capsule())
           .overlay(Capsule().stroke(IntroPalette.cardStroke, lineWidth: 1))
       } else {
@@ -83,7 +83,7 @@ struct IntroView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
-        .background(Color(.systemBackground))
+        .background(IntroPalette.card)
         .clipShape(Capsule())
         .overlay(Capsule().stroke(IntroPalette.cardStroke, lineWidth: 1))
       }
@@ -135,7 +135,7 @@ struct IntroView: View {
         .font(.system(size: 14, design: .monospaced))
         .padding(.horizontal, 7)
         .padding(.vertical, 2)
-        .background(Color(.systemBackground))
+        .background(IntroPalette.pill)
         .overlay(
           RoundedRectangle(cornerRadius: 6, style: .continuous)
             .stroke(IntroPalette.cardStroke, lineWidth: 1)
@@ -334,10 +334,22 @@ struct FlowLayout: Layout {
 
 private enum IntroPalette {
   static let accent = Color(red: 0.96, green: 0.45, blue: 0.16)
-  static let accentSoft = Color(red: 0.99, green: 0.83, blue: 0.69)
+  static let accentSoft = Color(
+    light: Color(red: 0.99, green: 0.83, blue: 0.69),
+    dark: Color(red: 0.45, green: 0.28, blue: 0.16))
   static let cardStroke = Color(.systemGray5)
-  static let cardCream = Color(red: 0.99, green: 0.96, blue: 0.93)
-  static let tactic = Color(red: 0.42, green: 0.32, blue: 0.78)
+  static let cardCream = Color(
+    light: Color(red: 0.99, green: 0.96, blue: 0.93),
+    dark: Color(red: 0.17, green: 0.15, blue: 0.13))
+  static let tactic = Color(
+    light: Color(red: 0.42, green: 0.32, blue: 0.78),
+    dark: Color(red: 0.67, green: 0.60, blue: 0.97))
+  static let card = Color(.secondarySystemGroupedBackground)
+  // Pills sit on cardCream, so their fill must track it, not the
+  // pure-black dark systemBackground.
+  static let pill = Color(
+    light: Color(.systemBackground),
+    dark: Color(red: 0.26, green: 0.24, blue: 0.21))
 }
 
 // MARK: - Tactic reference
@@ -455,9 +467,9 @@ struct TacticReferenceView: View {
   @State private var query: String = ""
   @State private var expanded: Set<String> = ["intro", "exact"]
 
-  private let tacticColor = Color(red: 0.42, green: 0.32, blue: 0.78)
-  private let cardStroke = Color(.systemGray5)
-  private let expandedCream = Color(red: 0.99, green: 0.96, blue: 0.93)
+  private let tacticColor = IntroPalette.tactic
+  private let cardStroke = IntroPalette.cardStroke
+  private let expandedCream = IntroPalette.cardCream
 
   private var filtered: [TacticEntry] {
     let q = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -494,7 +506,7 @@ struct TacticReferenceView: View {
           .font(.system(size: 16, weight: .bold))
           .foregroundStyle(.primary)
           .frame(width: 38, height: 38)
-          .background(Color(.systemBackground))
+          .background(IntroPalette.card)
           .clipShape(Circle())
           .overlay(Circle().stroke(cardStroke, lineWidth: 1))
       }
@@ -512,7 +524,7 @@ struct TacticReferenceView: View {
         .font(.system(size: 15, weight: .semibold))
         .foregroundStyle(.primary)
         .frame(width: 38, height: 38)
-        .background(Color(.systemBackground))
+        .background(IntroPalette.card)
         .clipShape(Circle())
         .overlay(Circle().stroke(cardStroke, lineWidth: 1))
     }
@@ -538,7 +550,7 @@ struct TacticReferenceView: View {
     }
     .padding(.horizontal, 14)
     .padding(.vertical, 12)
-    .background(Color(.systemBackground))
+    .background(IntroPalette.card)
     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     .overlay(
       RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -582,7 +594,7 @@ struct TacticReferenceView: View {
       }
     }
     .frame(maxWidth: .infinity, alignment: .leading)
-    .background(isExpanded ? expandedCream : Color(.systemBackground))
+    .background(isExpanded ? expandedCream : IntroPalette.card)
     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     .overlay(
       RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -611,7 +623,7 @@ struct TacticReferenceView: View {
         .foregroundStyle(isTacticUsage(p) ? tacticColor : .primary)
         .padding(.horizontal, 7)
         .padding(.vertical, 2)
-        .background(Color(.systemBackground))
+        .background(IntroPalette.pill)
         .overlay(
           RoundedRectangle(cornerRadius: 6, style: .continuous)
             .stroke(cardStroke, lineWidth: 1)

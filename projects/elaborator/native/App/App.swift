@@ -1,4 +1,14 @@
 import SwiftUI
+import UIKit
+
+extension Color {
+  /// A dynamic color that resolves per the current light/dark trait.
+  init(light: Color, dark: Color) {
+    self.init(UIColor { trait in
+      trait.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
+    })
+  }
+}
 
 @main
 struct LeanIOSElabExampleApp: App {

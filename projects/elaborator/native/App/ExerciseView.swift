@@ -32,12 +32,21 @@ enum CheckState {
 
 private enum Palette {
   static let accent = Color(red: 0.96, green: 0.45, blue: 0.16)
-  static let accentSoft = Color(red: 0.99, green: 0.83, blue: 0.69)
-  static let keyword = Color(red: 0.55, green: 0.18, blue: 0.55)
-  static let typeBlue = Color(red: 0.16, green: 0.38, blue: 0.85)
+  static let accentSoft = Color(
+    light: Color(red: 0.99, green: 0.83, blue: 0.69),
+    dark: Color(red: 0.45, green: 0.28, blue: 0.16))
+  static let keyword = Color(
+    light: Color(red: 0.55, green: 0.18, blue: 0.55),
+    dark: Color(red: 0.83, green: 0.56, blue: 0.83))
+  static let typeBlue = Color(
+    light: Color(red: 0.16, green: 0.38, blue: 0.85),
+    dark: Color(red: 0.49, green: 0.66, blue: 1.0))
   static let trackDim = Color(.systemGray5)
   static let cardStroke = Color(.systemGray5)
-  static let freshPurple = Color(red: 0.42, green: 0.32, blue: 0.78)
+  static let freshPurple = Color(
+    light: Color(red: 0.42, green: 0.32, blue: 0.78),
+    dark: Color(red: 0.67, green: 0.60, blue: 0.97))
+  static let card = Color(.secondarySystemGroupedBackground)
 }
 
 struct ExerciseView: View {
@@ -61,9 +70,13 @@ struct ExerciseView: View {
       VStack(spacing: 14) {
         topBar
         progressBar
-        sourceSection
-        stateSection
-        Spacer(minLength: 0)
+        ScrollView {
+          VStack(spacing: 14) {
+            sourceSection
+            stateSection
+          }
+        }
+        .frame(maxHeight: .infinity)
         hintRow
         if hasTacticPrefix {
           constantsRow
@@ -105,7 +118,7 @@ struct ExerciseView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
-        .background(Color(.systemBackground))
+        .background(Palette.card)
         .clipShape(Capsule())
         .overlay(Capsule().stroke(Palette.cardStroke, lineWidth: 1))
       }
@@ -122,7 +135,7 @@ struct ExerciseView: View {
           .font(.system(size: 16, weight: .bold))
           .foregroundStyle(.primary)
           .frame(width: 38, height: 38)
-          .background(Color(.systemBackground))
+          .background(Palette.card)
           .clipShape(Circle())
           .overlay(Circle().stroke(Palette.cardStroke, lineWidth: 1))
       }
@@ -143,7 +156,7 @@ struct ExerciseView: View {
             .font(.system(size: 16, weight: .bold))
             .foregroundStyle(.primary)
             .frame(width: 38, height: 38)
-            .background(Color(.systemBackground))
+            .background(Palette.card)
             .clipShape(Circle())
             .overlay(Circle().stroke(Palette.cardStroke, lineWidth: 1))
         }
@@ -153,7 +166,7 @@ struct ExerciseView: View {
             .font(.system(size: 14, weight: .semibold))
             .foregroundStyle(.primary)
             .frame(width: 38, height: 38)
-            .background(Color(.systemBackground))
+            .background(Palette.card)
             .clipShape(Circle())
             .overlay(Circle().stroke(Palette.cardStroke, lineWidth: 1))
         }
@@ -335,7 +348,7 @@ struct ExerciseView: View {
                 .foregroundStyle(Palette.typeBlue)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(Color(.systemBackground))
+                .background(Palette.card)
                 .overlay(Capsule().stroke(Palette.typeBlue.opacity(0.45), lineWidth: 1))
                 .clipShape(Capsule())
             }
@@ -453,7 +466,7 @@ struct ExerciseView: View {
       .opacity(isRunning ? 0.7 : 1.0)
       .padding(.trailing, 6)
     }
-    .background(Color(.systemBackground))
+    .background(Palette.card)
     .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
     .overlay(
       RoundedRectangle(cornerRadius: 28, style: .continuous)
@@ -528,7 +541,7 @@ struct ExerciseView: View {
     content()
       .padding(14)
       .frame(maxWidth: .infinity, alignment: .leading)
-      .background(Color(.systemBackground))
+      .background(Palette.card)
       .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
       .overlay(
         RoundedRectangle(cornerRadius: 14, style: .continuous)
