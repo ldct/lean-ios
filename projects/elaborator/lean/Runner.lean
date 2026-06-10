@@ -77,6 +77,14 @@ private def errorResult (msg : String) : Json :=
     ("complete", Json.bool false)
   ]
 
+/--
+Snapshot of the previous `checkLeanSource` run, passed back to `Language.Lean.process` so it can
+reuse the imported environment when the header is unchanged. Without reuse, every check re-imports
+the whole closure while the previous run's compacted regions are still mapped, so olean loading
+falls back to heap copies that accumulate until reads fail on device.
+-/
+private initialize lastSnapRef : IO.Ref (Option Language.Lean.InitialSnapshot) ← IO.mkRef none
+
 def checkLeanSourceAtPaths (searchPath : List System.FilePath) (input : String) : IO String := do
   try
     unsafe enableInitializersExecution
@@ -92,7 +100,9 @@ def checkLeanSourceAtPaths (searchPath : List System.FilePath) (input : String) 
         trustLevel := 0
         plugins := #[]
       }
-    let snap ← Language.Lean.process setup none { inputCtx with }
+    let old? ← lastSnapRef.get
+    let snap ← Language.Lean.process setup old? { inputCtx with }
+    lastSnapRef.set (some snap)
     let snaps := Language.toSnapshotTree snap
     let messages := collectMessages snaps
     let trees := collectInfoTrees snaps
