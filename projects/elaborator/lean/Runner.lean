@@ -117,7 +117,15 @@ def checkLeanSourceAtPaths (searchPath : List System.FilePath) (input : String) 
     let goals ← match doneInfo? with
       | some (ctx, ti) => collectGoals ctx ti
       | none => pure #[]
-    let complete := doneInfo?.isSome && goals.isEmpty
+    -- An empty goal list at `done` is not enough: elaboration error recovery closes goals
+    -- with a synthetic sorry, and an explicit `sorry` closes them "legitimately". Require a
+    -- log free of errors and of the "declaration uses `sorry`" warning.
+    let hasError := messages.toList.any fun m => m.severity matches .error
+    let usesSorry ← messages.toList.anyM fun m => do
+      match m.severity with
+      | .warning => return (← m.data.toString).startsWith "declaration uses"
+      | _ => return false
+    let complete := doneInfo?.isSome && goals.isEmpty && !hasError && !usesSorry
     let result := Json.mkObj [
       ("diagnostics", Json.arr diags.toArray),
       ("goals", Json.arr (goals.map interactiveGoalToJson)),

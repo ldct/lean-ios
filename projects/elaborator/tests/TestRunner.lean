@@ -16,6 +16,15 @@ def batteriesRBMapScript : String :=
   "#eval m.find? \"x\"\n" ++
   "#eval m.size\n"
 
+def cleanProofScript : String :=
+  "example {A : Type} (a : A) : A := by\n  exact a\n  done\n"
+
+def sorryProofScript : String :=
+  "example {A : Type} (a : A) : A := by\n  sorry\n  done\n"
+
+def errorTacticScript : String :=
+  "example {A : Type} (a : A) : A := by\n  exact b\n  done\n"
+
 def deriveLeanLibDir : IO System.FilePath := do
   if let some d ← IO.getEnv "TEST_LEAN_LIB_DIR" then
     return System.FilePath.mk d
@@ -33,11 +42,26 @@ def runCase (name input : String) (searchPath : List System.FilePath) : IO Bool 
     IO.println s!"PASS [{name}]"
   return !hasError
 
+def runCompletenessCase (name input : String) (expected : Bool) (searchPath : List System.FilePath) : IO Bool := do
+  IO.println s!"=== {name} ==="
+  let output ← checkLeanSourceAtPaths searchPath input
+  IO.println output
+  let expectedField := s!"\"complete\":{expected}"
+  if (output.splitOn expectedField).length > 1 then
+    IO.println s!"PASS [{name}]"
+    return true
+  else
+    IO.eprintln s!"FAIL [{name}]: expected {expectedField}"
+    return false
+
 def main : IO UInt32 := do
   let leanLib ← deriveLeanLibDir
   IO.println s!"leanLib = {leanLib}"
   let mut ok := true
   ok := (← runCase "known-good (master)" knownGoodScript [leanLib]) && ok
+  ok := (← runCompletenessCase "complete: clean solve" cleanProofScript true [leanLib]) && ok
+  ok := (← runCompletenessCase "not complete: sorry" sorryProofScript false [leanLib]) && ok
+  ok := (← runCompletenessCase "not complete: erroring tactic" errorTacticScript false [leanLib]) && ok
   if let some battLib ← IO.getEnv "TEST_BATTERIES_LIB_DIR" then
     let battPath := System.FilePath.mk battLib
     IO.println s!"batteriesLib = {battPath}"
