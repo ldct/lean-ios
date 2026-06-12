@@ -225,8 +225,7 @@ struct ExerciseView: View {
 
   private func segmentColor(_ idx: Int, current: Int) -> Color {
     if idx < current { return Palette.accent }
-    if idx == current { return Palette.accent }
-    if idx == current + 1 { return Palette.accentSoft }
+    if idx == current { return Palette.accentSoft }
     return Palette.trackDim
   }
 
