@@ -53,6 +53,7 @@ struct ExerciseView: View {
   let exercise: Exercise
   @Binding var path: NavigationPath
   @State private var source: String = ""
+  @State private var history: [String] = []
   @State private var input: String = ""
   @State private var state: CheckState = .idle
   @State private var isRunning = false
@@ -236,6 +237,7 @@ struct ExerciseView: View {
       HStack {
         sectionLabel("SOURCE")
         Spacer()
+        undoButton
         Text("example")
           .font(.system(size: 12, design: .monospaced))
           .foregroundStyle(.secondary)
@@ -247,6 +249,25 @@ struct ExerciseView: View {
           .textSelection(.enabled)
       }
     }
+  }
+
+  private var undoButton: some View {
+    Button(action: undo) {
+      HStack(spacing: 4) {
+        Image(systemName: "arrow.uturn.backward")
+          .font(.system(size: 11, weight: .semibold))
+        Text("Undo")
+          .font(.system(size: 12, weight: .semibold, design: .rounded))
+      }
+      .foregroundStyle(history.isEmpty ? Color.secondary : Palette.accent)
+      .padding(.horizontal, 10)
+      .padding(.vertical, 4)
+      .background(Palette.card)
+      .clipShape(Capsule())
+      .overlay(Capsule().stroke(Palette.cardStroke, lineWidth: 1))
+    }
+    .buttonStyle(.plain)
+    .disabled(history.isEmpty || isRunning)
   }
 
   private var displaySource: String {
@@ -485,6 +506,7 @@ struct ExerciseView: View {
   private func send() {
     let tactic = input.trimmingCharacters(in: .whitespacesAndNewlines)
     if !tactic.isEmpty {
+      history.append(source)
       let donePattern = "  done\n"
       if let range = source.range(of: donePattern, options: .backwards) {
         source.replaceSubrange(range, with: "  \(tactic)\n  done\n")
@@ -493,6 +515,12 @@ struct ExerciseView: View {
       }
       input = ""
     }
+    runCheck()
+  }
+
+  private func undo() {
+    guard let previous = history.popLast() else { return }
+    source = previous
     runCheck()
   }
 
