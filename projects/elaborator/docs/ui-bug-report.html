@@ -15,6 +15,8 @@
   .sev.high     { background:rgba(245,115,41,.18); color:var(--accent); }
   .sev.medium   { background:rgba(226,163,54,.15); color:var(--warn); }
   .sev.low      { background:rgba(91,141,239,.15); color:var(--info); }
+  .sev.fixed    { background:rgba(48,164,108,.18); color:var(--good); }
+  .sev.open     { background:rgba(154,154,162,.15); color:#9a9aa2; }
   p { line-height:1.55; }
   .grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
   .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; }
@@ -48,19 +50,24 @@
 
 <h2>Summary</h2>
 <table>
-  <tr><th>#</th><th>Severity</th><th>Finding</th><th>Where</th></tr>
-  <tr><td>1</td><td><span class="sev critical">CRITICAL</span></td><td><code>sorry</code> is accepted as a finished proof — green “Proof complete”</td><td><code>lean/Runner.lean:120</code></td></tr>
-  <tr><td>2</td><td><span class="sev critical">CRITICAL</span></td><td>A <em>failing</em> tactic also shows “Proof complete” (error + green check on the same screen)</td><td><code>lean/Runner.lean:120</code></td></tr>
-  <tr><td>3</td><td><span class="sev high">HIGH</span></td><td>No undo/reset — one typo permanently bricks the level</td><td><code>ExerciseView.swift:485</code></td></tr>
-  <tr><td>4</td><td><span class="sev medium">MEDIUM</span></td><td>Running bare <code>exact</code> leaks the hidden <code>done</code> sentinel: “Unknown identifier `done`” at a line that doesn’t exist on screen</td><td><code>ExerciseView.swift:252,485</code></td></tr>
-  <tr><td>5</td><td><span class="sev medium">MEDIUM</span></td><td>CONSTANTS row suggests inaccessible <code>a✝</code> after <code>intros</code>; tapping it produces a tactic that can never parse</td><td><code>ExerciseView.swift:422</code></td></tr>
-  <tr><td>6</td><td><span class="sev medium">MEDIUM</span></td><td>Conjunction World intro tells users to type <code>\&lt;</code> / <code>\&gt;</code> for ⟨ ⟩ — there is no abbreviation expansion, so the documented syntax can’t be entered at all</td><td><code>IntroView.swift</code> (conjunctionworld-intro)</td></tr>
-  <tr><td>7</td><td><span class="sev low">LOW</span></td><td>Tactic reference renders raw markdown (<code>## Summary</code>, stray code-fence pills, literal <code>*introduction*</code>)</td><td><code>IntroView.swift:442</code></td></tr>
-  <tr><td>8</td><td><span class="sev low">LOW</span></td><td>Reference ⇄ tactic-chip mismatch: reference documents <code>use</code>/<code>rcases</code>/<code>rw</code>/<code>induction</code> (<code>use</code> is “unknown tactic” in this build); chips <code>intros</code>, <code>refine</code> have no reference entry</td><td><code>IntroView.swift:362</code>, <code>ExerciseView.swift:62</code></td></tr>
-  <tr><td>9</td><td><span class="sev low">LOW</span></td><td>Goal badge is hard-coded “goal 1 of N” — after solving the first of two goals it reads “goal 1 of 1”</td><td><code>ExerciseView.swift:284</code></td></tr>
+  <tr><th>#</th><th>Severity</th><th>Status</th><th>Finding</th><th>Where</th></tr>
+  <tr><td>1</td><td><span class="sev critical">CRITICAL</span></td><td><span class="sev fixed">FIXED</span> <code>1bc0c55</code></td><td><code>sorry</code> is accepted as a finished proof — green “Proof complete”</td><td><code>lean/Runner.lean:120</code></td></tr>
+  <tr><td>2</td><td><span class="sev critical">CRITICAL</span></td><td><span class="sev fixed">FIXED</span> <code>1bc0c55</code></td><td>A <em>failing</em> tactic also shows “Proof complete” (error + green check on the same screen)</td><td><code>lean/Runner.lean:120</code></td></tr>
+  <tr><td>3</td><td><span class="sev high">HIGH</span></td><td><span class="sev fixed">FIXED</span> <code>108e0b1</code></td><td>No undo/reset — one typo permanently bricks the level</td><td><code>ExerciseView.swift:485</code></td></tr>
+  <tr><td>4</td><td><span class="sev medium">MEDIUM</span></td><td><span class="sev open">OPEN</span></td><td>Running bare <code>exact</code> leaks the hidden <code>done</code> sentinel: “Unknown identifier `done`” at a line that doesn’t exist on screen</td><td><code>ExerciseView.swift:252,485</code></td></tr>
+  <tr><td>5</td><td><span class="sev medium">MEDIUM</span></td><td><span class="sev open">OPEN</span></td><td>CONSTANTS row suggests inaccessible <code>a✝</code> after <code>intros</code>; tapping it produces a tactic that can never parse</td><td><code>ExerciseView.swift:422</code></td></tr>
+  <tr><td>6</td><td><span class="sev medium">MEDIUM</span></td><td><span class="sev open">OPEN</span></td><td>Conjunction World intro tells users to type <code>\&lt;</code> / <code>\&gt;</code> for ⟨ ⟩ — there is no abbreviation expansion, so the documented syntax can’t be entered at all</td><td><code>IntroView.swift</code> (conjunctionworld-intro)</td></tr>
+  <tr><td>7</td><td><span class="sev low">LOW</span></td><td><span class="sev open">OPEN</span></td><td>Tactic reference renders raw markdown (<code>## Summary</code>, stray code-fence pills, literal <code>*introduction*</code>)</td><td><code>IntroView.swift:442</code></td></tr>
+  <tr><td>8</td><td><span class="sev low">LOW</span></td><td><span class="sev open">OPEN</span></td><td>Reference ⇄ tactic-chip mismatch: reference documents <code>use</code>/<code>rcases</code>/<code>rw</code>/<code>induction</code> (<code>use</code> is “unknown tactic” in this build); chips <code>intros</code>, <code>refine</code> have no reference entry</td><td><code>IntroView.swift:362</code>, <code>ExerciseView.swift:62</code></td></tr>
+  <tr><td>9</td><td><span class="sev low">LOW</span></td><td><span class="sev open">OPEN</span></td><td>Goal badge is hard-coded “goal 1 of N” — after solving the first of two goals it reads “goal 1 of 1”</td><td><code>ExerciseView.swift:284</code></td></tr>
 </table>
 
-<h2>1 · <code>sorry</code> beats the level <span class="sev critical">CRITICAL</span></h2>
+<h2>1 · <code>sorry</code> beats the level <span class="sev critical">CRITICAL</span> <span class="sev fixed">FIXED</span></h2>
+<p class="repro">
+  <strong>Fixed</strong> in <code>1bc0c55</code> together with #2: <code>complete</code> now also
+  requires a message log with no errors and no “declaration uses <code>`sorry`</code>” warning.
+  Regression-tested in <code>tests/TestRunner.lean</code>.
+</p>
 <p>
   On any exercise, typing <code>sorry</code> and pressing Run flips the STATE card to the green
   “Proof complete” with the ✅ <em>complete</em> badge — identical to a real solve. The only tell
@@ -82,7 +89,13 @@
   </div>
 </div>
 
-<h2>2 · A failing tactic also shows “Proof complete” <span class="sev critical">CRITICAL</span></h2>
+<h2>2 · A failing tactic also shows “Proof complete” <span class="sev critical">CRITICAL</span> <span class="sev fixed">FIXED</span></h2>
+<p class="repro">
+  <strong>Fixed</strong> in <code>1bc0c55</code> together with #1 (the suggested fix below, as one
+  change to the completeness check in <code>Runner.lean</code>). One deviation: the sorry check
+  matches the “declaration uses <code>`sorry`</code>” warning prefix — Lean 4.29 quotes it with
+  backticks, not the single quotes assumed below.
+</p>
 <p>
   Worse than #1: a tactic that <em>errors</em> still turns the state green. <code>exact b</code>
   (where <code>b</code> doesn’t exist) shows “error 2:8 Unknown identifier `b`” and
@@ -110,7 +123,13 @@ let complete := doneInfo?.isSome
   </div>
 </div>
 
-<h2>3 · One typo permanently bricks the level <span class="sev high">HIGH</span></h2>
+<h2>3 · One typo permanently bricks the level <span class="sev high">HIGH</span> <span class="sev fixed">FIXED</span></h2>
+<p class="repro">
+  <strong>Fixed</strong> in <code>108e0b1</code> with the undo option (nothing is dropped
+  silently): <code>send()</code> snapshots the source before each commit, and an Undo button in
+  the SOURCE header pops the snapshot and re-checks. Verified in the simulator against the repro
+  below: <code>exact b</code> → Undo → <code>exact a</code> → genuine “Proof complete”.
+</p>
 <p>
   Every Run appends the input to the source for good — there is no undo, no reset, and no way to
   edit the source. After the failed <code>exact b</code> above, entering the <em>correct</em>
@@ -297,6 +316,12 @@ let complete := doneInfo?.isSome
   scored as “Proof complete” (<code>Runner.lean:120</code>), and the no-undo input model turns any
   mistake into a dead end. Those two fixes (completeness must check the message log; Run must be
   try-then-commit or undoable) would resolve findings 1–5 at the root.
+  <p style="margin:10px 0 0;">
+    ✅ <strong>Update (June 12 2026):</strong> findings 1–3 are fixed. #1 and #2 in
+    <code>1bc0c55</code> — completeness now requires an error-free, sorry-free message log,
+    regression-tested in <code>tests/TestRunner.lean</code>. #3 in <code>108e0b1</code> — an Undo
+    button backed by a source-history stack, verified in the simulator. Findings 4–9 remain open.
+  </p>
 </div>
 
 </div></body></html>
