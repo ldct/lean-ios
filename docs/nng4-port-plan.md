@@ -26,6 +26,20 @@
 >   252 MB flat, ~3 ms per level after. **D2 is decided: ship one shared
 >   maximal header** (with the UI refusing the current level's own theorem);
 >   per-level headers are not viable on device.
+> - **Phase 2 (simulator leg):** `scripts/nng-extract.py` extracts all 9
+>   active worlds (79 levels) and generates canonical-solution sweep files
+>   under the shared `import Game` header. **79/79 pass on host and in the
+>   simulator**; sim: median check 8 ms, p90 24 ms, max 2.7 s (the one-time
+>   import), footprint flat at 252 MB across the whole session. Physical
+>   iPhone leg pending (no device connected).
+> - **Phase 3:** the same extractor emits `nng-levels.json` (worlds, levels,
+>   statements, prose, hints, inventory unlocks, docs). Initial rollout is
+>   scoped to **Tutorial + Addition** (13 levels):
+>   `projects/elaborator/assets/nng-levels.json`. Regenerate with
+>   `scripts/nng-extract.py --worlds Tutorial,Addition --emit-json …`.
+> - Remaining: Phase 4 UI (consume the JSON; tactic chips + theorem
+>   inventory + hints; refuse the level's own theorem name), physical-device
+>   sweep, Phase 5 trimming (`.olean.private` is 84 MB of the 185 MB tree).
 
 Plan for bringing [leanprover-community/NNG4](https://github.com/leanprover-community/NNG4)
 into the `projects/elaborator` app, the same way

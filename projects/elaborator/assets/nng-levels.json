@@ -1,0 +1,539 @@
+{
+ "docs": {
+  "DefinitionDoc": {
+   "Add": {
+    "category": null,
+    "content": "",
+    "displayName": "+"
+   },
+   "MyNat": {
+    "category": null,
+    "content": "",
+    "displayName": "ℕ"
+   }
+  },
+  "TacticDoc": {
+   "nth_rewrite": {
+    "category": null,
+    "content": "",
+    "displayName": null
+   },
+   "rfl": {
+    "category": null,
+    "content": "",
+    "displayName": null
+   },
+   "rw": {
+    "category": null,
+    "content": "",
+    "displayName": null
+   },
+   "«repeat»": {
+    "category": null,
+    "content": "",
+    "displayName": null
+   }
+  },
+  "TheoremDoc": {
+   "MyNat.add_assoc": {
+    "category": "+",
+    "content": "",
+    "displayName": "add_assoc"
+   },
+   "MyNat.add_comm": {
+    "category": "+",
+    "content": "",
+    "displayName": "add_comm"
+   },
+   "MyNat.add_right_comm": {
+    "category": "+",
+    "content": "",
+    "displayName": "add_right_comm"
+   },
+   "MyNat.add_succ": {
+    "category": "+",
+    "content": "",
+    "displayName": "add_succ"
+   },
+   "MyNat.add_zero": {
+    "category": "+",
+    "content": "",
+    "displayName": "add_zero"
+   },
+   "MyNat.four_eq_succ_three": {
+    "category": "012",
+    "content": "",
+    "displayName": "four_eq_succ_three"
+   },
+   "MyNat.one_eq_succ_zero": {
+    "category": "012",
+    "content": "",
+    "displayName": "one_eq_succ_zero"
+   },
+   "MyNat.succ_add": {
+    "category": "+",
+    "content": "",
+    "displayName": "succ_add"
+   },
+   "MyNat.succ_eq_add_one": {
+    "category": "+",
+    "content": "",
+    "displayName": "succ_eq_add_one"
+   },
+   "MyNat.three_eq_succ_two": {
+    "category": "012",
+    "content": "",
+    "displayName": "three_eq_succ_two"
+   },
+   "MyNat.two_eq_succ_one": {
+    "category": "012",
+    "content": "",
+    "displayName": "two_eq_succ_one"
+   },
+   "MyNat.zero_add": {
+    "category": "+",
+    "content": "",
+    "displayName": "zero_add"
+   }
+  }
+ },
+ "worlds": [
+  {
+   "id": "Tutorial",
+   "introduction": "Welcome to tutorial world! In this world we learn the basics\nof proving theorems. The boss level of this world\nis the theorem `2 + 2 = 4`.\n\nYou prove theorems by solving puzzles using tools called *tactics*.\nThe aim is to prove the theorem by applying tactics\nin the right order.\n\nLet's learn some basic tactics. Click on \"Start\" below\nto begin your quest.\n",
+   "levels": [
+    {
+     "conclusion": "\nCongratulations! You completed your first verified proof!\n\nRemember that `rfl` is a *tactic*. If you ever want information about the `rfl` tactic,\nyou can click on `rfl` in the list of tactics on the right.\n\nNow click on \"Next\" to learn about the `rw` tactic.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "In order to use the tactic `rfl` you can enter it in the text box\n  under the goal and hit \"Execute\"."
+      }
+     ],
+     "introduction": "\n# Read this first\n\nEach level in this game involves proving a mathematical theorem (the \"Goal\").\nThe goal will be a statement about *numbers*. Some numbers in this game have known values.\nThose numbers have names like $37$. Other numbers will be secret. They're called things\nlike $x$ and $q$. We know $x$ is a number, we just don't know which one.\n\nIn this first level we're going to prove the theorem that $37x + q = 37x + q$.\nYou can see `x q : ℕ` in the *Objects* below, which means that `x` and `q`\nare numbers.\n\nWe solve goals in Lean using *Tactics*, and the first tactic we're\ngoing to learn is called `rfl`, which proves all theorems of the form $X = X$.\n\nProve that $37x+q=37x+q$ by executing the `rfl` tactic.\n",
+     "level": 1,
+     "module": "Game.Levels.Tutorial.L01rfl",
+     "newDefinitions": [],
+     "newTactics": [
+      "rfl"
+     ],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"In order to use the tactic `rfl` you can enter it in the text box\n  under the goal and hit \\\"Execute\\\".\"\n  rfl",
+     "statementDoc": "",
+     "statementName": null,
+     "statementSig": "(x q : ℕ) : 37 * x + q = 37 * x + q",
+     "theoremTab": "012",
+     "title": "The rfl tactic",
+     "world": "Tutorial"
+    },
+    {
+     "conclusion": "You now know enough tactics to prove `2 + 2 = 4`! Let's begin the journey.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "First execute `rw [h]` to replace the `y` with `x + 7`."
+      },
+      {
+       "hidden": false,
+       "text": "Can you take it from here? Click on \"Show more help!\" if you need a hint."
+      },
+      {
+       "hidden": true,
+       "text": "Now `rfl` will work."
+      }
+     ],
+     "introduction": "\nIn this level the *goal* is $2y=2(x+7)$ but to help us we\nhave an *assumption* `h` saying that $y = x + 7$. Check that you can see `h` in\nyour list of assumptions. Lean thinks of `h` as being a secret proof of the\nassumption, rather like `x` is a secret number.\n\nBefore we can use `rfl`, we have to \"substitute in for $y$\".\nWe do this in Lean by *rewriting* the goal with `h`,\nusing the `rw` tactic.\n",
+     "level": 2,
+     "module": "Game.Levels.Tutorial.L02rw",
+     "newDefinitions": [],
+     "newTactics": [
+      "rw",
+      "«repeat»",
+      "nth_rewrite"
+     ],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"First execute `rw [h]` to replace the `y` with `x + 7`.\"\n  rw [h]\n  Hint \"Can you take it from here? Click on \\\"Show more help!\\\" if you need a hint.\"\n  Hint (hidden := true) \"Now `rfl` will work.\"\n  rfl",
+     "statementDoc": "",
+     "statementName": null,
+     "statementSig": "(x y : ℕ) (h : y = x + 7) : 2 * y = 2 * (x + 7)",
+     "theoremTab": "012",
+     "title": "the rw tactic",
+     "world": "Tutorial"
+    },
+    {
+     "conclusion": "\nNote that you can do `rw [two_eq_succ_one, one_eq_succ_zero]`\nand then `rfl` to solve this level in two lines.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Start with `rw [two_eq_succ_one]` to begin to break `2` down into its definition."
+      },
+      {
+       "hidden": false,
+       "text": "Can you take it from here?"
+      },
+      {
+       "hidden": true,
+       "text": "Next turn `1` into `succ 0` with `rw [one_eq_succ_zero]`."
+      },
+      {
+       "hidden": true,
+       "text": "Now finish the job with `rfl`."
+      }
+     ],
+     "introduction": "\n## The birth of number.\n\nNumbers in Lean are defined by two rules.\n\n* `0` is a number.\n* If `n` is a number, then the *successor* `succ n` of `n` is a number.\n\nThe successor of `n` means the number after `n`. Let's learn to\ncount, and name a few small numbers.\n\n## Counting to four.\n\n`0` is a number, so `succ 0` is a number. Let's call this new number `1`.\nSimilarly let's define `2 = succ 1`, `3 = succ 2` and `4 = succ 3`.\nThis gives us plenty of numbers to be getting along with.\n\nThe *proof* that `2 = succ 1` is called `two_eq_succ_one`.\nCheck out the \"012\" tab in the list of lemmas on the right\nfor this and other proofs.\n\nLet's prove that $2$ is the number after the number after zero.\n",
+     "level": 3,
+     "module": "Game.Levels.Tutorial.L03two_eq_ss0",
+     "newDefinitions": [
+      "MyNat"
+     ],
+     "newTactics": [],
+     "newTheorems": [
+      "MyNat.one_eq_succ_zero",
+      "MyNat.two_eq_succ_one",
+      "MyNat.three_eq_succ_two"
+     ],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Start with `rw [two_eq_succ_one]` to begin to break `2` down into its definition.\"\n  rw [two_eq_succ_one]\n  Hint \"Can you take it from here?\"\n  Hint (hidden := true) \"Next turn `1` into `succ 0` with `rw [one_eq_succ_zero]`.\"\n  rw [one_eq_succ_zero]\n  Hint (hidden := true) \"Now finish the job with `rfl`.\"\n  rfl",
+     "statementDoc": "",
+     "statementName": null,
+     "statementSig": ": 2 = succ (succ 0)",
+     "theoremTab": null,
+     "title": "Numbers",
+     "world": "Tutorial"
+    },
+    {
+     "conclusion": "\nWhy did we not just define `succ n` to be `n + 1`? Because we have not\neven *defined* addition yet! We'll do that in the next level.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Try `rw [← one_eq_succ_zero]` to change `succ 0` into `1`."
+      },
+      {
+       "hidden": false,
+       "text": "Can you now change the goal into `2 = 2`?"
+      },
+      {
+       "hidden": true,
+       "text": "Now `rw [← two_eq_succ_one]` will change `succ 1` into `2`."
+      }
+     ],
+     "introduction": "\nIf `h` is a proof of `X = Y` then `rw [h]` will\nturn `X`s into `Y`s. But what if we want to\nturn `Y`s into `X`s? To tell the `rw` tactic\nwe want this, we use a left arrow `←`. Type\n`\\l` and then hit the space bar to get this arrow.\n\nLet's prove that $2$ is the number after the number\nafter $0$ again, this time by changing `succ (succ 0)`\ninto `2`.\n",
+     "level": 4,
+     "module": "Game.Levels.Tutorial.L04rw_backwards",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Try `rw [← one_eq_succ_zero]` to change `succ 0` into `1`.\"\n  rw [← one_eq_succ_zero]\n  Hint \"Can you now change the goal into `2 = 2`?\"\n  Hint (hidden := true) \"Now `rw [← two_eq_succ_one]` will change `succ 1` into `2`.\"\n  rw [← two_eq_succ_one]\n  rfl",
+     "statementDoc": "",
+     "statementName": null,
+     "statementSig": ": 2 = succ (succ 0)",
+     "theoremTab": "012",
+     "title": "rewriting backwards",
+     "world": "Tutorial"
+    },
+    {
+     "conclusion": "Those of you interested in speedrunning the game may want to know\nthat `repeat rw [add_zero]` will do both rewrites at once.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "`rw [add_zero]` will change `b + 0` into `b`."
+      },
+      {
+       "hidden": false,
+       "text": "Now `rw [add_zero]` will change `c + 0` into `c`."
+      }
+     ],
+     "introduction": "\nWe'd like to prove `2 + 2 = 4` but right now\nwe can't even *state* it\nbecause we haven't yet defined addition.\n\n## Defining addition.\n\nHow are we going to add $37$ to an arbitrary number $x$? Well,\nthere are only two ways to make numbers in this game: $0$\nand successors. So to define `37 + x` we will need\nto know what `37 + 0` is and what `37 + succ x` is.\nLet's start with adding `0`.\n\n### Adding 0\n\nTo make addition agree with our intuition, we should *define* `37 + 0`\nto be `37`. More generally, we should define `a + 0` to be `a` for\nany number `a`. The name of this proof in Lean is `add_zero a`.\nFor example `add_zero 37` is a proof of `37 + 0 = 37`,\n`add_zero x` is a proof of `x + 0 = x`, and `add_zero` is a proof\nof `? + 0 = ?`.\n\nWe write `add_zero x : x + 0 = x`, so `proof : statement`.\n",
+     "level": 5,
+     "module": "Game.Levels.Tutorial.L05add_zero",
+     "newDefinitions": [
+      "Add"
+     ],
+     "newTactics": [],
+     "newTheorems": [
+      "MyNat.add_zero"
+     ],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"`rw [add_zero]` will change `b + 0` into `b`.\"\n  rw [add_zero]\n  Hint \"Now `rw [add_zero]` will change `c + 0` into `c`.\"\n  rw [add_zero]\n  rfl",
+     "statementDoc": "",
+     "statementName": null,
+     "statementSig": "(a b c : ℕ) : a + (b + 0) + (c + 0) = a + b + c",
+     "theoremTab": "+",
+     "title": "Adding zero",
+     "world": "Tutorial"
+    },
+    {
+     "conclusion": "\nLet's now learn about Peano's second axiom for addition, `add_succ`.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Try `rw [add_zero c]`."
+      },
+      {
+       "hidden": false,
+       "text": "`add_zero c` is a proof of `c + 0 = c` so that was what got rewritten.\n  You can now change `b + 0` to `b` with `rw [add_zero]` or `rw [add_zero b]`. You\n  can usually stick to `rw [add_zero]` unless you need real precision."
+      }
+     ],
+     "introduction": "\n## Precision rewriting\n\nIn the last level, there was `b + 0` and `c + 0`,\nand `rw [add_zero]` changed the first one it saw,\nwhich was `b + 0`. Let's learn how to tell Lean\nto change `c + 0` first by giving `add_zero` an\nexplicit input.\n",
+     "level": 6,
+     "module": "Game.Levels.Tutorial.L06add_zero2",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Try `rw [add_zero c]`.\"\n  rw [add_zero c]\n  Hint \"`add_zero c` is a proof of `c + 0 = c` so that was what got rewritten.\n  You can now change `b + 0` to `b` with `rw [add_zero]` or `rw [add_zero b]`. You\n  can usually stick to `rw [add_zero]` unless you need real precision.\"\n  rw [add_zero]\n  rfl",
+     "statementDoc": "",
+     "statementName": null,
+     "statementSig": "(a b c : ℕ) : a + (b + 0) + (c + 0) = a + b + c",
+     "theoremTab": null,
+     "title": "Precision rewriting",
+     "world": "Tutorial"
+    },
+    {
+     "conclusion": "[dramatic music]. Now are you ready to face the first boss of the game?",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Start by unravelling the `1`."
+      },
+      {
+       "hidden": true,
+       "text": "`rw [one_eq_succ_zero]` will do this."
+      },
+      {
+       "hidden": true,
+       "text": "Now you can `rw [add_succ]`"
+      },
+      {
+       "hidden": true,
+       "text": "And now `rw [add_zero]`"
+      },
+      {
+       "hidden": true,
+       "text": "And finally `rfl`."
+      }
+     ],
+     "introduction": "\nEvery number in Lean is either $0$ or a successor. We know how to add $0$,\nbut we need to figure out how to add successors. Let's say we already know\nthat `37 + d = q`. What should the answer to `37 + succ d` be? Well,\n`succ d` is one bigger than `d`, so `37 + succ d` should be `succ q`,\nthe number one bigger than `q`. More generally `x + succ d` should\nbe `succ (x + d)`. Let's add this as a lemma.\n\n* `add_succ x d : x + succ d = succ (x + d)`\n\nIf you ever see `... + succ ...` in your goal, `rw [add_succ]` is\nnormally a good idea.\n\nLet's now prove that `succ n = n + 1`. Figure out how to get `+ succ` into\nthe picture, and then `rw [add_succ]`. Switch between the `+` (addition) and\n`012` (numerals) tabs under \"Theorems\" on the right to\nsee which proofs you can rewrite.\n",
+     "level": 7,
+     "module": "Game.Levels.Tutorial.L07add_succ",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [
+      "MyNat.add_succ"
+     ],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Start by unravelling the `1`.\"\n  Hint (hidden := true) \"`rw [one_eq_succ_zero]` will do this.\"\n  rw [one_eq_succ_zero]\n  Hint (hidden := true) \"Now you can `rw [add_succ]`\"\n  rw [add_succ]\n  Hint (hidden := true) \"And now `rw [add_zero]`\"\n  rw [add_zero]\n  Hint (hidden := true) \"And finally `rfl`.\"\n  rfl",
+     "statementDoc": "",
+     "statementName": "succ_eq_add_one",
+     "statementSig": "n : succ n = n + 1",
+     "theoremTab": "012",
+     "title": "add_succ",
+     "world": "Tutorial"
+    },
+    {
+     "conclusion": "\nHere is an example proof of 2+2=4 showing off various techniques.\n\n```lean\nnth_rewrite 2 [two_eq_succ_one] -- only change the second `2` to `succ 1`.\nrw [add_succ]\nrw [one_eq_succ_zero]\nrw [add_succ, add_zero] -- two rewrites at once\nrw [← three_eq_succ_two] -- change `succ 2` to `3`\nrw [← four_eq_succ_three]\nrfl\n```\n\nOptional extra: you can run this proof yourself. Switch the game into \"Editor mode\" by clicking\non the `</>` button in the top right. You can now see your proof\nwritten as several lines of code. Move your cursor between lines to see\nthe goal state at any point. Now cut and paste your code elsewhere if you\nwant to save it, and paste the above proof in instead. Move your cursor\naround to investigate. When you've finished, click the `>_` button in the top right to\nmove back into \"Typewriter mode\".\n\nYou have finished tutorial world!\nClick \"Home\" to go back to the\noverworld, and select Addition World, where you will learn\nabout the `induction` tactic.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": true,
+       "text": "`nth_rewrite 2 [two_eq_succ_one]` is I think quicker than `rw [two_eq_succ_one]`."
+      },
+      {
+       "hidden": true,
+       "text": "Now you can `rw [add_succ]`"
+      }
+     ],
+     "introduction": " Good luck!\n\n  One last hint. If `h : X = Y` then `rw [h]` will change *all* `X`s into `Y`s.\n  If you only want to change one of them, say the 3rd one, then use\n  `nth_rewrite 3 [h]`.\n",
+     "level": 8,
+     "module": "Game.Levels.Tutorial.L08twoaddtwo",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint (hidden := true) \"`nth_rewrite 2 [two_eq_succ_one]` is I think quicker than `rw [two_eq_succ_one]`.\"\n  nth_rewrite 2 [two_eq_succ_one]\n  Hint (hidden := true) \"Now you can `rw [add_succ]`\"\n  rw [add_succ]\n  rw [one_eq_succ_zero]\n  rw [add_succ]\n  rw [add_zero]\n  rw [four_eq_succ_three]\n  rw [three_eq_succ_two]\n  rfl",
+     "statementDoc": "",
+     "statementName": null,
+     "statementSig": ": (2 : ℕ) + 2 = 4",
+     "theoremTab": "012",
+     "title": "2+2=4",
+     "world": "Tutorial"
+    }
+   ],
+   "title": "Tutorial World"
+  },
+  {
+   "id": "Addition",
+   "introduction": "\nWelcome to Addition World! In this world we'll learn the `induction` tactic.\nThis will enable us to defeat the boss level of this world, namely `x + y = y + x`.\n\nThe tactics `rw`, `rfl` and `induction` are the only tactics you'll need to\nbeat all the levels in Addition World, Multiplication World, and Power World.\nPower World contains the final boss of the game.\n\nThere are plenty more tactics in this game, but you'll only need to know them if you\nwant to explore the game further (for example if you decide to 100%\nthe game).\n",
+   "levels": [
+    {
+     "conclusion": "\n  This lemma would have been easy if we had known that `x + y = y + x`. That theorem\n  is called `add_comm` and it is *true*, but unfortunately its proof *uses* both\n  `add_zero` and `zero_add`!\n\n  Let's continue on our journey to `add_comm`, the proof of `x + y = y + x`.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "You can start a proof by induction on `n` by typing:\n  `induction n with d hd`."
+      },
+      {
+       "hidden": true,
+       "text": "try rewriting `add_zero`."
+      },
+      {
+       "hidden": true,
+       "text": "Use `add_succ`."
+      },
+      {
+       "hidden": true,
+       "text": "At this point you see the term `0 + {d}`, so you can use the\n    induction hypothesis with `rw [{hd}]`."
+      }
+     ],
+     "introduction": "\nIn this level we're going to prove that $0+n=n$, where $n$ is a secret natural number.\n\nWait, don't we already know that? No! We know that $n+0=n$, but that's `add_zero`.\nThis is `zero_add`, which is different.\n\nThe difficulty with proving `0 + n = n` is that we do not have a *formula* for\n`0 + n` in general, we can only use `add_zero` and `add_succ` once\nwe know whether `n` is `0` or a successor. The `induction` tactic splits into these two cases.\n\nThe base case will require us to prove `0 + 0 = 0`, and the inductive step\nwill ask us to show that if `0 + d = d` then `0 + succ d = succ d`. Because\n`0` and successor are the only way to make numbers, this will cover all the cases.\n\nSee if you can do your first induction proof in Lean.\n\n(By the way, if you are still in the \"Editor mode\" from the last world, you can swap\nback to \"Typewriter mode\" by clicking the `>_` button in the top right.)\n",
+     "level": 1,
+     "module": "Game.Levels.Addition.L01zero_add",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"You can start a proof by induction on `n` by typing:\n  `induction n with d hd`.\"\n  induction n with d hd\n  · Hint \"Now you have two goals. Once you proved the first, you will jump to the second one.\n    This first goal is the base case $n = 0$.\n\n    Recall that you can rewrite the proof of any lemma which is visible\n    in your inventory, or of any assumption displayed above the goal,\n    as long as it is of the form `X = Y`.\"\n    Hint (hidden := true) \"try rewriting `add_zero`.\"\n    rw [add_zero]\n    rfl\n  · Hint \"Now for the second goal. Here you have the induction hypothesis\n    `{hd} : 0 + {d} = {d}`, and you need to prove that `0 + succ {d} = succ {d}`.\"\n    Hint (hidden := true) \"Use `add_succ`.\"\n    rw [add_succ]\n    Hint (hidden := true) \"At this point you see the term `0 + {d}`, so you can use the\n    induction hypothesis with `rw [{hd}]`.\"\n    rw [hd]\n    rfl",
+     "statementDoc": "",
+     "statementName": "zero_add",
+     "statementSig": "(n : ℕ) : 0 + n = n",
+     "theoremTab": null,
+     "title": "zero_add",
+     "world": "Addition"
+    },
+    {
+     "conclusion": "\nWell done! You now have enough tools to tackle the main boss of this level.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": true,
+       "text": "You might want to think about whether induction\n  on `a` or `b` is the best idea."
+      },
+      {
+       "hidden": false,
+       "text": "Induction on `a` will not work here. You are still stuck with an `+ b`.\n    I suggest you delete this line and try a different approach."
+      }
+     ],
+     "introduction": "\nOh no! On the way to `add_comm`, a wild `succ_add` appears. `succ_add a b`\nis the proof that `(succ a) + b = succ (a + b)` for `a` and `b` numbers.\nThis result is what's standing in the way of `x + y = y + x`. Again\nwe have the problem that we are adding `b` to things, so we need\nto use induction to split into the cases where `b = 0` and `b` is a successor.\n",
+     "level": 2,
+     "module": "Game.Levels.Addition.L02succ_add",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint (hidden := true) \"You might want to think about whether induction\n  on `a` or `b` is the best idea.\"\n  Branch\n    induction a with _ _\n    Hint \"Induction on `a` will not work here. You are still stuck with an `+ b`.\n    I suggest you delete this line and try a different approach.\"\n    sorry\n  induction b with d hd\n  · rw [add_zero]\n    rw [add_zero]\n    rfl\n  · Hint \"Note that `succ a + {d}` means `(succ a) + {d}`. Put your cursor\n  on any `succ` in the goal or assumptions to see what exactly it's eating.\"\n    rw [add_succ, add_succ, hd]\n    rfl",
+     "statementDoc": "",
+     "statementName": "succ_add",
+     "statementSig": "(a b : ℕ) : succ a + b = succ (a + b)",
+     "theoremTab": null,
+     "title": "succ_add",
+     "world": "Addition"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": true,
+       "text": "Induction on `a` or `b` -- it's all the same in this one."
+      }
+     ],
+     "introduction": "\n[boss battle music]\n\nLook in your inventory to see the proofs you have available.\nThese should be enough.\n",
+     "level": 3,
+     "module": "Game.Levels.Addition.L03add_comm",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint (hidden := true) \"Induction on `a` or `b` -- it's all the same in this one.\"\n  induction b with d hd\n  · rw [add_zero, zero_add]\n    rfl\n  · rw [add_succ, succ_add, hd]\n    rfl",
+     "statementDoc": "",
+     "statementName": "add_comm",
+     "statementSig": "(a b : ℕ) : a + b = b + a",
+     "theoremTab": null,
+     "title": "add_comm (level boss)",
+     "world": "Addition"
+    },
+    {
+     "conclusion": "\nA passing mathematician congratulates you on proving that naturals\nare an additive commutative monoid.\n\nLet's practice using `add_assoc` and `add_comm` in one more level,\nbefore we leave addition world.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Remember that when Lean writes `a + b + c`, it means `(a + b) + c`.\n  If you are not sure where the brackets are in an expression, just hover\n  your cursor over it and look at what gets highlighted. For example,\n  hover over both `+` symbols on the left hand side of the goal and\n  you'll see where the invisible brackets are."
+      }
+     ],
+     "introduction": "\n  We've been adding up two numbers; in this level we will add up three.\n\n  What does $x+y+z$ *mean*? It could either mean $(x+y)+z$, or it\n  could mean $x+(y+z)$. In Lean, $x+y+z$ means $(x+y)+z$.\n\n  But why do we care which one it means; $(x+y)+z$ and $x+(y+z)$ are *equal*!\n\n  That's true, but we didn't prove it yet. Let's prove it now by induction.\n",
+     "level": 4,
+     "module": "Game.Levels.Addition.L04add_assoc",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Remember that when Lean writes `a + b + c`, it means `(a + b) + c`.\n  If you are not sure where the brackets are in an expression, just hover\n  your cursor over it and look at what gets highlighted. For example,\n  hover over both `+` symbols on the left hand side of the goal and\n  you'll see where the invisible brackets are.\"\n  induction c with d hd\n  · rw [add_zero, add_zero]\n    rfl\n  · rw [add_succ, add_succ, hd, add_succ]\n    rfl",
+     "statementDoc": "",
+     "statementName": "add_assoc",
+     "statementSig": "(a b c : ℕ) : a + b + c = a + (b + c)",
+     "theoremTab": null,
+     "title": "add_assoc (associativity of addition)",
+     "world": "Addition"
+    },
+    {
+     "conclusion": "\nYou've now seen all the tactics you need to beat the final boss of the game.\nYou can begin the journey towards this boss by entering Multiplication World.\n\nOr you can go off the beaten track and learn some new tactics in Implication\nWorld. These tactics let you prove more facts about addition, such as\nhow to deduce `a = 0` from `x + a = x`.\n\nClick \"Home\" and make your choice.\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\n`add_comm b c` is a proof that `b + c = c + b`. But if your goal\nis `a + b + c = a + c + b` then `rw [add_comm b c]` will not\nwork! Because the goal means `(a + b) + c = (a + c) + b` so there\nis no `b + c` term *directly* in the goal.\n\nUse associativity and commutativity to prove `add_right_comm`.\nYou don't need induction. `add_assoc` moves brackets around,\nand `add_comm` moves variables around.\n\nRemember that you can do more targeted rewrites by\nadding explicit variables as inputs to theorems. For example `rw [add_comm b]`\nwill only do rewrites of the form `b + ? = ? + b`, and `rw [add_comm b c]`\nwill only do rewrites of the form `b + c = c + b`.\n",
+     "level": 5,
+     "module": "Game.Levels.Addition.L05add_right_comm",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  rw [add_assoc]\n  rw [add_comm b, add_assoc]\n  rfl",
+     "statementDoc": "",
+     "statementName": "add_right_comm",
+     "statementSig": "(a b c : ℕ) : a + b + c = a + c + b",
+     "theoremTab": null,
+     "title": "add_right_comm",
+     "world": "Addition"
+    }
+   ],
+   "title": "Addition World"
+  }
+ ]
+}
