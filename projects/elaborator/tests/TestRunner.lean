@@ -54,6 +54,29 @@ def runCompletenessCase (name input : String) (expected : Bool) (searchPath : Li
     IO.eprintln s!"FAIL [{name}]: expected {expectedField}"
     return false
 
+/--
+Run every `.lean` file in `dir` as an NNG-style exercise: elaborate it with
+`done` appended to the proof and require `"complete":true`. Prints per-file
+wall time; header changes between files make each run a cold(ish) import.
+-/
+def runNngSamples (dir : System.FilePath) (searchPath : List System.FilePath) : IO Bool := do
+  let entries ← dir.readDir
+  let files := (entries.filter (·.path.extension == some "lean")).map (·.path)
+  let files := files.qsort (fun a b => a.toString < b.toString)
+  if files.isEmpty then
+    IO.eprintln s!"FAIL [nng-samples]: no .lean files in {dir}"
+    return false
+  let mut ok := true
+  for f in files do
+    let src ← IO.FS.readFile f
+    let input := src ++ "\n  done\n"
+    let t0 ← IO.monoMsNow
+    let pass ← runCompletenessCase s!"nng {f.fileName.getD f.toString}" input true searchPath
+    let t1 ← IO.monoMsNow
+    IO.println s!"     [{t1 - t0} ms]"
+    ok := pass && ok
+  return ok
+
 def main : IO UInt32 := do
   let leanLib ← deriveLeanLibDir
   IO.println s!"leanLib = {leanLib}"
@@ -70,4 +93,10 @@ def main : IO UInt32 := do
   else
     IO.eprintln "SKIP [import Batteries]: TEST_BATTERIES_LIB_DIR not set"
     ok := false
+  match (← IO.getEnv "TEST_NNG_LIB_DIR"), (← IO.getEnv "TEST_NNG_SAMPLES_DIR") with
+  | some nngLib, some samplesDir =>
+    IO.println s!"nngLib = {nngLib}"
+    ok := (← runNngSamples (System.FilePath.mk samplesDir) [leanLib, System.FilePath.mk nngLib]) && ok
+  | _, _ =>
+    IO.println "SKIP [nng samples]: TEST_NNG_LIB_DIR / TEST_NNG_SAMPLES_DIR not set"
   return if ok then 0 else 1

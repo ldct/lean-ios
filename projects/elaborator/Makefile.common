@@ -39,6 +39,24 @@ BATTERIES_CACHE_DIR := $(BUILD_DIR)/batteries-oleans/$(BATTERIES_REV)-lean$(LEAN
 BATTERIES_EXTRACT_STAMP := $(BATTERIES_CACHE_DIR)/.extract-stamp
 BATTERIES_OLEAN_DIR := $(BATTERIES_CACHE_DIR)/batteries-oleans/lib/lean
 
+# NNG4 oleans: the Game package (built from the ldct NNG4 `ios` branch with
+# the GameServer shim), the Mathlib slice it imports, Qq, and a full Batteries
+# at the rev mathlib was built against (staged after the batteries archive so
+# overlapping modules are shadowed by a self-consistent set). Produced by
+# scripts/nng-build.py + scripts/olean-closure.py and published like the
+# batteries archive. For local content work, point NNG_OLEAN_DIR at the
+# closure script's staging tree (build/nng-oleans-local/lib/lean).
+NNG_RELEASE_REPO ?= ldct/lean-ios
+NNG_RELEASE_TAG ?= nng-oleans
+NNG_REV ?= bfdeb998c96a
+NNG_ARCHIVE_NAME := nng-oleans-$(NNG_REV)-lean$(LEAN4_OLEANS_REV).tar.zst
+NNG_URL := https://github.com/$(NNG_RELEASE_REPO)/releases/download/$(NNG_RELEASE_TAG)/$(NNG_ARCHIVE_NAME)
+NNG_DOWNLOAD_DIR := $(BUILD_DIR)/downloads
+NNG_ARCHIVE := $(NNG_DOWNLOAD_DIR)/$(NNG_ARCHIVE_NAME)
+NNG_CACHE_DIR := $(BUILD_DIR)/nng-oleans/$(NNG_REV)-lean$(LEAN4_OLEANS_REV)
+NNG_EXTRACT_STAMP := $(NNG_CACHE_DIR)/.extract-stamp
+NNG_OLEAN_DIR ?= $(NNG_CACHE_DIR)/nng-oleans/lib/lean
+
 APP_LEAN_DIR := lean
 APP_NATIVE_DIR := native
 APP_BUILD_DIR := $(BUILD_DIR)/ios-elab-app-$(IOS_TARGET_TAG)
@@ -159,6 +177,30 @@ $(APP_BATTERIES_STAMP): $(APP_LEAN_LIB_STAMP) $(BATTERIES_EXTRACT_STAMP)
 	rsync -a $(BATTERIES_OLEAN_DIR)/ $(APP_LEAN_LIB_DIR)/
 	touch $(APP_BATTERIES_STAMP)
 
+$(NNG_ARCHIVE):
+	mkdir -p $(NNG_DOWNLOAD_DIR)
+	curl -fL --retry 3 --output $(NNG_ARCHIVE) $(NNG_URL)
+
+$(NNG_EXTRACT_STAMP): $(NNG_ARCHIVE)
+	rm -rf $(NNG_CACHE_DIR)
+	mkdir -p $(NNG_CACHE_DIR)
+	zstd -d -c $(NNG_ARCHIVE) | tar -xf - -C $(NNG_CACHE_DIR)
+	test -f $(NNG_CACHE_DIR)/nng-oleans/lib/lean/Game.olean
+	touch $(NNG_EXTRACT_STAMP)
+
+APP_NNG_STAMP := $(APP_DIR)/.nng-lib-stamp
+
+# Only require the download/extract when NNG_OLEAN_DIR is the default
+# (a command-line/environment override points at a locally staged tree).
+ifeq ($(origin NNG_OLEAN_DIR), file)
+$(APP_NNG_STAMP): $(NNG_EXTRACT_STAMP)
+test-nng: $(NNG_EXTRACT_STAMP)
+endif
+
+$(APP_NNG_STAMP): $(APP_BATTERIES_STAMP)
+	rsync -a $(NNG_OLEAN_DIR)/ $(APP_LEAN_LIB_DIR)/
+	touch $(APP_NNG_STAMP)
+
 $(APP_INFO_PLIST): $(APP_INFO_PLIST_SRC)
 	mkdir -p $(APP_DIR)
 	cp $(APP_INFO_PLIST_SRC) $(APP_INFO_PLIST)
@@ -167,7 +209,7 @@ $(APP_LAUNCH_STORYBOARD_DEST): $(APP_LAUNCH_STORYBOARD_SRC)
 	mkdir -p $(APP_DIR)
 	cp $(APP_LAUNCH_STORYBOARD_SRC) $(APP_LAUNCH_STORYBOARD_DEST)
 
-app: $(APP_BIN) $(APP_INFO_PLIST) $(APP_LAUNCH_STORYBOARD_DEST) $(APP_LEAN_LIB_STAMP) $(APP_BATTERIES_STAMP)
+app: $(APP_BIN) $(APP_INFO_PLIST) $(APP_LAUNCH_STORYBOARD_DEST) $(APP_LEAN_LIB_STAMP) $(APP_BATTERIES_STAMP) $(APP_NNG_STAMP)
 
 clean:
 	rm -rf $(APP_BUILD_DIR) $(APP_LAKE_BUILD_DIR)
@@ -181,3 +223,15 @@ test:
 	lake build Batteries:leanArts
 	lake build TestRunner
 	TEST_BATTERIES_LIB_DIR="$$PWD/$(APP_BATTERIES_BUILD_LIB)" lake exe TestRunner
+
+# NNG sweep against the staged NNG/Mathlib/Batteries olean tree. The staged
+# tree contains a full Batteries (the rev mathlib was built against), so it
+# doubles as the Batteries search path.
+NNG_SAMPLES_DIR ?= lean-samples/Tutorial
+
+test-nng:
+	lake build TestRunner
+	TEST_BATTERIES_LIB_DIR="$(abspath $(NNG_OLEAN_DIR))" \
+	TEST_NNG_LIB_DIR="$(abspath $(NNG_OLEAN_DIR))" \
+	TEST_NNG_SAMPLES_DIR="$(NNG_SAMPLES_DIR)" \
+	lake exe TestRunner

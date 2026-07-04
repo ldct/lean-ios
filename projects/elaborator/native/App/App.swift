@@ -12,6 +12,10 @@ extension Color {
 
 @main
 struct LeanIOSElabExampleApp: App {
+  init() {
+    NNGTestHarness.runIfRequested()
+  }
+
   var body: some Scene {
     WindowGroup {
       RootView()
