@@ -44,8 +44,13 @@ targets:
       - path: native/App/App.swift
       - path: native/App/IntroView.swift
       - path: native/App/ExerciseView.swift
+      - path: native/App/NNGTestHarness.swift
+      - path: native/App/NNGGame.swift
+      - path: native/App/NNGViews.swift
       - path: native/App/LaunchScreen.storyboard
       - path: native/Assets.xcassets
+      - path: assets/nng-levels.json
+        buildPhase: resources
       - path: native/LeanIOSBridge.h
         buildPhase: none
     settings:
