@@ -58,6 +58,8 @@ def skip_ws_comments(text: str, i: int) -> int:
         elif text.startswith("--", i):
             j = text.find("\n", i)
             i = len(text) if j < 0 else j
+        elif text.startswith("/--", i):
+            return i  # doc comment: significant, not skippable whitespace
         elif text.startswith("/-", i):
             depth = 1
             i += 2
@@ -143,7 +145,7 @@ class LevelParser:
             elif word in IDENTS_CMDS:
                 eol = text.find("\n", i)
                 eol = len(text) if eol < 0 else eol
-                names = IDENT_RE.findall(text[i:eol])
+                names = [n.strip("«»") for n in IDENT_RE.findall(text[i:eol])]
                 key = {"NewTactic": "newTactics", "NewHiddenTactic": "newTactics",
                        "NewTheorem": "newTheorems", "NewDefinition": "newDefinitions",
                        "DisabledTactic": "disabledTactics",
@@ -203,6 +205,8 @@ class LevelParser:
             elif text.startswith("--", j):
                 nl = text.find("\n", j)
                 j = len(text) if nl < 0 else nl
+            elif text.startswith("/--", j):
+                _, j = read_doc_comment(text, j)
             elif text.startswith("/-", j):
                 j = skip_ws_comments(text, j)
             elif text.startswith(":=", j):

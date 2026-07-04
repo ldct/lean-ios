@@ -65,6 +65,11 @@ struct ExerciseView: View {
     "assumption", "cases", "constructor", "left", "right", "have", "refine",
   ]
 
+  /// NNG levels carry their own accumulated tactic set.
+  private var tacticList: [String] {
+    exercise.nng.map { $0.tactics } ?? Self.tactics
+  }
+
   var body: some View {
     ZStack {
       Color(.systemGroupedBackground).ignoresSafeArea()
@@ -81,9 +86,16 @@ struct ExerciseView: View {
         hintRow
         if hasTacticPrefix {
           constantsRow
-          freeRow
+          if exercise.nng != nil {
+            theoremsRow
+          } else {
+            freeRow
+          }
         } else {
           tacticsRow
+          if exercise.nng != nil {
+            theoremsRow
+          }
         }
         inputRow
       }
@@ -98,10 +110,18 @@ struct ExerciseView: View {
       }
     }
     .sheet(isPresented: $showingIntro) {
-      IntroView(exercise: exercise, mode: .review)
+      if exercise.nng != nil {
+        NNGInfoSheet(exercise: exercise)
+      } else {
+        IntroView(exercise: exercise, mode: .review)
+      }
     }
     .sheet(isPresented: $showingReference) {
-      TacticReferenceView()
+      if let nng = exercise.nng {
+        NNGInventoryView(nng: nng)
+      } else {
+        TacticReferenceView()
+      }
     }
   }
 
@@ -177,6 +197,9 @@ struct ExerciseView: View {
   }
 
   private var eyebrow: String {
+    if exercise.nng != nil {
+      return "NNG · \(exercise.world.uppercased())"
+    }
     let chapter = chapterIndex.map { "CH · \($0 + 1)" } ?? "CH"
     return "\(chapter) · \(exercise.world.uppercased())"
   }
@@ -195,7 +218,8 @@ struct ExerciseView: View {
   }
 
   private var lessonIndex: Int? {
-    worldGroups
+    if let nng = exercise.nng { return nng.levelNumber - 1 }
+    return worldGroups
       .first { $0.world == exercise.world }?
       .exercises
       .filter { !$0.isWorldIntro }
@@ -203,7 +227,8 @@ struct ExerciseView: View {
   }
 
   private var lessonsInWorld: Int {
-    worldGroups
+    if let nng = exercise.nng { return nng.levelCount }
+    return worldGroups
       .first { $0.world == exercise.world }?
       .exercises
       .filter { !$0.isWorldIntro }
@@ -272,6 +297,9 @@ struct ExerciseView: View {
 
   private var displaySource: String {
     var s = source
+    if !exercise.hiddenPrelude.isEmpty, s.hasPrefix(exercise.hiddenPrelude) {
+      s.removeFirst(exercise.hiddenPrelude.count)
+    }
     let donePattern = "  done\n"
     if let range = s.range(of: donePattern, options: .backwards) {
       s.replaceSubrange(range, with: "")
@@ -334,9 +362,18 @@ struct ExerciseView: View {
         .textSelection(.enabled)
     case .ok(let result):
       if result.complete {
-        Text("Proof complete")
-          .font(.system(size: 16, weight: .bold, design: .rounded))
-          .foregroundStyle(.green)
+        VStack(alignment: .leading, spacing: 8) {
+          Text("Proof complete")
+            .font(.system(size: 16, weight: .bold, design: .rounded))
+            .foregroundStyle(.green)
+          if let conclusion = exercise.nng?.conclusion,
+            !conclusion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+          {
+            Text(nngMarkdown(conclusion.trimmingCharacters(in: .whitespacesAndNewlines)))
+              .font(.system(size: 14))
+              .lineSpacing(3)
+          }
+        }
       } else if let goal = result.goals.first {
         GoalCard(goal: goal)
       } else if result.diagnostics.isEmpty {
@@ -361,7 +398,7 @@ struct ExerciseView: View {
         .foregroundStyle(.secondary)
       ScrollView(.horizontal, showsIndicators: false) {
         HStack(spacing: 8) {
-          ForEach(Self.tactics, id: \.self) { t in
+          ForEach(tacticList, id: \.self) { t in
             Button(action: { insert(t) }) {
               Text(t)
                 .font(.system(size: 14, design: .monospaced))
@@ -455,7 +492,38 @@ struct ExerciseView: View {
     let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { return false }
     let firstWord = trimmed.split(separator: " ", maxSplits: 1).first.map(String.init) ?? ""
-    return Self.tactics.contains(firstWord)
+    return tacticList.contains(firstWord)
+  }
+
+  /// Unlocked-theorem chips for NNG levels. An empty input inserts a ready
+  /// `rw [name]`; otherwise the bare name is appended.
+  @ViewBuilder
+  private var theoremsRow: some View {
+    if let nng = exercise.nng, !nng.theorems.isEmpty {
+      HStack(alignment: .center, spacing: 8) {
+        Text("THEOREMS")
+          .font(.system(size: 10, weight: .bold, design: .rounded))
+          .tracking(0.6)
+          .foregroundStyle(.secondary)
+        ScrollView(.horizontal, showsIndicators: false) {
+          HStack(spacing: 8) {
+            ForEach(nng.theorems, id: \.self) { name in
+              Button(action: { insertTheorem(name) }) {
+                Text(name)
+                  .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                  .foregroundStyle(Palette.freshPurple)
+                  .padding(.horizontal, 9)
+                  .padding(.vertical, 5)
+                  .background(Palette.freshPurple.opacity(0.12))
+                  .overlay(Capsule().stroke(Palette.freshPurple.opacity(0.35), lineWidth: 1))
+                  .clipShape(Capsule())
+              }
+              .buttonStyle(.plain)
+            }
+          }
+        }
+      }
+    }
   }
 
   // MARK: - Input
@@ -503,8 +571,29 @@ struct ExerciseView: View {
     input += token + " "
   }
 
+  private func insertTheorem(_ name: String) {
+    if input.trimmingCharacters(in: .whitespaces).isEmpty {
+      input = "rw [\(name)] "
+    } else {
+      insert(name)
+    }
+  }
+
+  /// With the shared `import Game` header the current level's theorem is
+  /// already in the environment; refuse tactics that mention it (D2).
+  private func refusesOwnTheorem(_ tactic: String) -> Bool {
+    guard let own = exercise.nng?.statementName else { return false }
+    return tactic.range(of: "\\b\(own)\\b", options: .regularExpression) != nil
+  }
+
   private func send() {
     let tactic = input.trimmingCharacters(in: .whitespacesAndNewlines)
+    if refusesOwnTheorem(tactic) {
+      state = .bridgeError(
+        "`\(exercise.nng?.statementName ?? "")` is the theorem you are proving"
+          + " in this level — using it would be cheating.")
+      return
+    }
     if !tactic.isEmpty {
       history.append(source)
       let donePattern = "  done\n"
@@ -550,6 +639,9 @@ struct ExerciseView: View {
     do {
       let result = try JSONDecoder().decode(CheckResult.self, from: data)
       state = .ok(result)
+      if result.complete && exercise.nng != nil {
+        NNGProgress.markComplete(exercise.id)
+      }
     } catch {
       state = .bridgeError("JSON decode failed: \(error)\nRaw:\n\(decoded)")
     }

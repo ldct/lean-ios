@@ -3,96 +3,96 @@
   "DefinitionDoc": {
    "Add": {
     "category": null,
-    "content": "",
+    "content": "`Add a b`, with notation `a + b`, is\nthe usual sum of natural numbers. Internally it is defined\nvia the following two hypotheses:\n\n* `add_zero a : a + 0 = a`\n\n* `add_succ a b : a + succ b = succ (a + b)`\n\nOther theorems about naturals, such as `zero_add a : 0 + a = a`, are proved\nby induction using these two basic theorems.",
     "displayName": "+"
    },
    "MyNat": {
     "category": null,
-    "content": "",
+    "content": "`ℕ` is the natural numbers, just called \\\"numbers\\\" in this game. It's\ndefined via two rules:\n\n* `0 : ℕ` (zero is a number)\n* `succ (n : ℕ) : ℕ` (the successor of a number is a number)\n\n## Game Implementation\n\n*The game uses its own copy of the natural numbers, called `MyNat` with notation `ℕ`.\nIt is distinct from the Lean natural numbers `Nat`, which should hopefully\nnever leak into the natural number game.*",
     "displayName": "ℕ"
    }
   },
   "TacticDoc": {
    "nth_rewrite": {
     "category": null,
-    "content": "",
+    "content": "## Summary\n\nIf `h : X = Y` and there are several `X`s in the goal, then\n`nth_rewrite 3 [h]` will just change the third `X` to a `Y`.\n\n## Example\n\nIf the goal is `2 + 2 = 4` then `nth_rewrite 2 [two_eq_succ_one]`\nwill change the goal to `2 + succ 1 = 4`. In contrast, `rw [two_eq_succ_one]`\nwill change the goal to `succ 1 + succ 1 = 4`.",
     "displayName": null
    },
    "rfl": {
     "category": null,
-    "content": "",
+    "content": "## Summary\n\n`rfl` proves goals of the form `X = X`.\n\nIn other words, the `rfl` tactic will close any goal of the\nform `A = B` if `A` and `B` are *identical*.\n\n`rfl` is short for \\\"reflexivity (of equality)\\\".\n\n## Example:\n\nIf the goal looks like this:\n\n```\nx + 37 = x + 37\n```\n\nthen `rfl` will close it. But if it looks like `0 + x = x` then `rfl` won't work, because even\nthough $0+x$ and $x$ are always equal as *numbers*, they are not equal as *terms*.\nThe only term which is identical to `0 + x` is `0 + x`.\n\n## Details\n\n`rfl` is short for \\\"reflexivity of equality\\\".\n\n## Game Implementation\n\n*Note that our `rfl` is weaker than the version used in core Lean and `mathlib`,\nfor pedagogical purposes; mathematicians do not distinguish between propositional\nand definitional equality because they think about definitions in a different way\nto type theorists (`zero_add` and `add_zero` are both \\\"facts\\\" as far\nas mathematicians are concerned, and who cares what the definition of addition is).*",
     "displayName": null
    },
    "rw": {
     "category": null,
-    "content": "",
+    "content": "## Summary\n\nIf `h` is a proof of an equality `X = Y`, then `rw [h]` will change\nall `X`s in the goal to `Y`s. It's the way to \\\"substitute in\\\".\n\n## Variants\n\n* `rw [← h]` (changes `Y`s to `X`s; get the back arrow by typing `\\left ` or `\\l`.)\n\n* `rw [h1, h2]` (a sequence of rewrites)\n\n* `rw [h] at h2` (changes `X`s to `Y`s in hypothesis `h2`)\n\n* `rw [h] at h1 h2 ⊢` (changes `X`s to `Y`s in two hypotheses and the goal;\nget the `⊢` symbol with `\\|-`.)\n\n* `repeat rw [add_zero]` will keep changing `? + 0` to `?`\nuntil there are no more matches for `? + 0`.\n\n* `nth_rewrite 2 [h]` will change only the second `X` in the goal to `Y`.\n\n### Example:\n\nIf you have the assumption `h : x = y + y` and your goal is\n```\nsucc (x + 0) = succ (y + y)\n```\n\nthen\n\n`rw [add_zero]`\n\nwill change the goal into `succ x = succ (y + y)`, and then\n\n`rw [h]`\n\nwill change the goal into `succ (y + y) = succ (y + y)`, which\ncan be solved with `rfl`.\n\n### Example:\n\nYou can use `rw` to change a hypothesis as well.\nFor example, if you have two hypotheses\n```\nh1 : x = y + 3\nh2 : 2 * y = x\n```\nthen `rw [h1] at h2` will turn `h2` into `h2 : 2 * y = y + 3`.\n\n## Common errors\n\n* You need the square brackets. `rw h` is never correct.\n\n* If `h` is not a *proof* of an *equality* (a statement of the form `A = B`),\nfor example if `h` is a function or an implication,\nthen `rw` is not the tactic you want to use. For example,\n`rw [P = Q]` is never correct: `P = Q` is the theorem *statement*,\nnot the proof. If `h : P = Q` is the proof, then `rw [h]` will work.\n\n## Details\n\nThe `rw` tactic is a way to do \\\"substituting in\\\". There\nare two distinct situations where you can use this tactic.\n\n1) Basic usage: if `h : A = B` is an assumption or\nthe proof of a theorem, and if the goal contains one or more `A`s, then `rw [h]`\nwill change them all to `B`s. The tactic will error\nif there are no `A`s in the goal.\n\n2) Advanced usage: Assumptions coming from theorem proofs\noften have missing pieces. For example `add_zero`\nis a proof that `? + 0 = ?` because `add_zero` really is a function,\nand `?` is the input. In this situation `rw` will look through the goal\nfor any subterm of the form `x + 0`, and the moment it\nfinds one it fixes `?` to be `x` then changes all `x + 0`s to `x`s.\n\nExercise: think about why `rw [add_zero]` changes the term\n`(0 + 0) + (x + 0) + (0 + 0) + (x + 0)` to\n`0 + (x + 0) + 0 + (x + 0)`\n\nIf you can't remember the name of the proof of an equality, look it up in\nthe list of lemmas on the right.\n\n## Targeted usage\n\nIf your goal is `b + c + a = b + (a + c)` and you want to rewrite `a + c`\nto `c + a`, then `rw [add_comm]` will not work because Lean finds another\naddition first and swaps those inputs instead. Use `rw [add_comm a c]` to\nguarantee that Lean rewrites `a + c` to `c + a`. This works because\n`add_comm` is a proof that `?1 + ?2 = ?2 + ?1`, `add_comm a` is a proof\nthat `a + ? = ? + a`, and `add_comm a c` is a proof that `a + c = c + a`.\n\nIf `h : X = Y` then `rw [h]` will turn all `X`s into `Y`s.\nIf you only want to change the 37th occurrence of `X`\nto `Y` then do `nth_rewrite 37 [h]`.",
     "displayName": null
    },
    "«repeat»": {
     "category": null,
-    "content": "",
+    "content": "## Summary\n\n`repeat t` repeatedly applies the tactic `t`\nto the goal. You don't need to use this\ntactic, it just speeds things up sometimes.\n\n## Example\n\n`repeat rw [add_zero]` will turn the goal\n`a + 0 + (0 + (0 + 0)) = b + 0 + 0`\ninto the goal\n`a = b`.",
     "displayName": null
    }
   },
   "TheoremDoc": {
    "MyNat.add_assoc": {
     "category": "+",
-    "content": "",
+    "content": "`add_assoc a b c` is a proof\nthat `(a + b) + c = a + (b + c)`. Note that in Lean `(a + b) + c` prints\nas `a + b + c`, because the notation for addition is defined to be left\nassociative.",
     "displayName": "add_assoc"
    },
    "MyNat.add_comm": {
     "category": "+",
-    "content": "",
+    "content": "`add_comm x y` is a proof of `x + y = y + x`.",
     "displayName": "add_comm"
    },
    "MyNat.add_right_comm": {
     "category": "+",
-    "content": "",
+    "content": "`add_right_comm a b c` is a proof that `(a + b) + c = (a + c) + b`\n\nIn Lean, `a + b + c` means `(a + b) + c`, so this result gets displayed\nas `a + b + c = a + c + b`.",
     "displayName": "add_right_comm"
    },
    "MyNat.add_succ": {
     "category": "+",
-    "content": "",
+    "content": "`add_succ a b` is the proof of `a + succ b = succ (a + b)`.",
     "displayName": "add_succ"
    },
    "MyNat.add_zero": {
     "category": "+",
-    "content": "",
+    "content": "`add_zero a` is a proof that `a + 0 = a`.\n\n## Summary\n\n`add_zero` is really a function, which\neats a number, and returns a proof of a theorem\nabout that number. For example `add_zero 37` is\na proof that `37 + 0 = 37`.\n\nThe `rw` tactic will accept `rw [add_zero]`\nand will try to figure out which number you omitted\nto input.\n\n## Details\n\nA mathematician sometimes thinks of `add_zero`\nas \\\"one thing\\\", namely a proof of $\\forall n ∈ ℕ, n + 0 = n$.\nThis is just another way of saying that it's a function which\ncan eat any number n and will return a proof that `n + 0 = n`.",
     "displayName": "add_zero"
    },
    "MyNat.four_eq_succ_three": {
     "category": "012",
-    "content": "",
+    "content": "`four_eq_succ_three` is a proof of `4 = succ 3`.",
     "displayName": "four_eq_succ_three"
    },
    "MyNat.one_eq_succ_zero": {
     "category": "012",
-    "content": "",
+    "content": "`one_eq_succ_zero` is a proof of `1 = succ 0`.\"",
     "displayName": "one_eq_succ_zero"
    },
    "MyNat.succ_add": {
     "category": "+",
-    "content": "",
+    "content": "`succ_add a b` is a proof that `succ a + b = succ (a + b)`.",
     "displayName": "succ_add"
    },
    "MyNat.succ_eq_add_one": {
     "category": "+",
-    "content": "",
+    "content": "`succ_eq_add_one n` is the proof that `succ n = n + 1`.",
     "displayName": "succ_eq_add_one"
    },
    "MyNat.three_eq_succ_two": {
     "category": "012",
-    "content": "",
+    "content": "`three_eq_succ_two` is a proof of `3 = succ 2`.",
     "displayName": "three_eq_succ_two"
    },
    "MyNat.two_eq_succ_one": {
     "category": "012",
-    "content": "",
+    "content": "`two_eq_succ_one` is a proof of `2 = succ 1`.",
     "displayName": "two_eq_succ_one"
    },
    "MyNat.zero_add": {
     "category": "+",
-    "content": "",
+    "content": "`zero_add x` is the proof of `0 + x = x`.\n\n`zero_add` is a `simp` lemma, because replacing `0 + x` by `x`\nis almost always what you want to do if you're simplifying an expression.",
     "displayName": "zero_add"
    }
   }
@@ -123,7 +123,7 @@
       "namespace MyNat"
      ],
      "proof": "  Hint \"In order to use the tactic `rfl` you can enter it in the text box\n  under the goal and hit \\\"Execute\\\".\"\n  rfl",
-     "statementDoc": "",
+     "statementDoc": "If $x$ and $q$ are arbitrary natural numbers, then $37x+q=37x+q.$",
      "statementName": null,
      "statementSig": "(x q : ℕ) : 37 * x + q = 37 * x + q",
      "theoremTab": "012",
@@ -153,7 +153,7 @@
      "newDefinitions": [],
      "newTactics": [
       "rw",
-      "«repeat»",
+      "repeat",
       "nth_rewrite"
      ],
      "newTheorems": [],
@@ -161,7 +161,7 @@
       "namespace MyNat"
      ],
      "proof": "  Hint \"First execute `rw [h]` to replace the `y` with `x + 7`.\"\n  rw [h]\n  Hint \"Can you take it from here? Click on \\\"Show more help!\\\" if you need a hint.\"\n  Hint (hidden := true) \"Now `rfl` will work.\"\n  rfl",
-     "statementDoc": "",
+     "statementDoc": "If $x$ and $y$ are natural numbers, and $y = x + 7$, then $2y = 2(x + 7)$.",
      "statementName": null,
      "statementSig": "(x y : ℕ) (h : y = x + 7) : 2 * y = 2 * (x + 7)",
      "theoremTab": "012",
@@ -205,7 +205,7 @@
       "namespace MyNat"
      ],
      "proof": "  Hint \"Start with `rw [two_eq_succ_one]` to begin to break `2` down into its definition.\"\n  rw [two_eq_succ_one]\n  Hint \"Can you take it from here?\"\n  Hint (hidden := true) \"Next turn `1` into `succ 0` with `rw [one_eq_succ_zero]`.\"\n  rw [one_eq_succ_zero]\n  Hint (hidden := true) \"Now finish the job with `rfl`.\"\n  rfl",
-     "statementDoc": "",
+     "statementDoc": "$2$ is the number after the number after $0$.",
      "statementName": null,
      "statementSig": ": 2 = succ (succ 0)",
      "theoremTab": null,
@@ -239,7 +239,7 @@
       "namespace MyNat"
      ],
      "proof": "  Hint \"Try `rw [← one_eq_succ_zero]` to change `succ 0` into `1`.\"\n  rw [← one_eq_succ_zero]\n  Hint \"Can you now change the goal into `2 = 2`?\"\n  Hint (hidden := true) \"Now `rw [← two_eq_succ_one]` will change `succ 1` into `2`.\"\n  rw [← two_eq_succ_one]\n  rfl",
-     "statementDoc": "",
+     "statementDoc": "$2$ is the number after the number after $0$.",
      "statementName": null,
      "statementSig": ": 2 = succ (succ 0)",
      "theoremTab": "012",
@@ -273,7 +273,7 @@
       "namespace MyNat"
      ],
      "proof": "  Hint \"`rw [add_zero]` will change `b + 0` into `b`.\"\n  rw [add_zero]\n  Hint \"Now `rw [add_zero]` will change `c + 0` into `c`.\"\n  rw [add_zero]\n  rfl",
-     "statementDoc": "",
+     "statementDoc": "$a+(b+0)+(c+0)=a+b+c.$",
      "statementName": null,
      "statementSig": "(a b c : ℕ) : a + (b + 0) + (c + 0) = a + b + c",
      "theoremTab": "+",
@@ -303,7 +303,7 @@
       "namespace MyNat"
      ],
      "proof": "  Hint \"Try `rw [add_zero c]`.\"\n  rw [add_zero c]\n  Hint \"`add_zero c` is a proof of `c + 0 = c` so that was what got rewritten.\n  You can now change `b + 0` to `b` with `rw [add_zero]` or `rw [add_zero b]`. You\n  can usually stick to `rw [add_zero]` unless you need real precision.\"\n  rw [add_zero]\n  rfl",
-     "statementDoc": "",
+     "statementDoc": "$a+(b+0)+(c+0)=a+b+c.$",
      "statementName": null,
      "statementSig": "(a b c : ℕ) : a + (b + 0) + (c + 0) = a + b + c",
      "theoremTab": null,
@@ -347,7 +347,7 @@
       "namespace MyNat"
      ],
      "proof": "  Hint \"Start by unravelling the `1`.\"\n  Hint (hidden := true) \"`rw [one_eq_succ_zero]` will do this.\"\n  rw [one_eq_succ_zero]\n  Hint (hidden := true) \"Now you can `rw [add_succ]`\"\n  rw [add_succ]\n  Hint (hidden := true) \"And now `rw [add_zero]`\"\n  rw [add_zero]\n  Hint (hidden := true) \"And finally `rfl`.\"\n  rfl",
-     "statementDoc": "",
+     "statementDoc": "For all natural numbers $a$, we have $\\operatorname{succ}(a) = a+1$.",
      "statementName": "succ_eq_add_one",
      "statementSig": "n : succ n = n + 1",
      "theoremTab": "012",
@@ -377,7 +377,7 @@
       "namespace MyNat"
      ],
      "proof": "  Hint (hidden := true) \"`nth_rewrite 2 [two_eq_succ_one]` is I think quicker than `rw [two_eq_succ_one]`.\"\n  nth_rewrite 2 [two_eq_succ_one]\n  Hint (hidden := true) \"Now you can `rw [add_succ]`\"\n  rw [add_succ]\n  rw [one_eq_succ_zero]\n  rw [add_succ]\n  rw [add_zero]\n  rw [four_eq_succ_three]\n  rw [three_eq_succ_two]\n  rfl",
-     "statementDoc": "",
+     "statementDoc": "$2+2=4$.",
      "statementName": null,
      "statementSig": ": (2 : ℕ) + 2 = 4",
      "theoremTab": "012",
@@ -422,7 +422,7 @@
       "namespace MyNat"
      ],
      "proof": "  Hint \"You can start a proof by induction on `n` by typing:\n  `induction n with d hd`.\"\n  induction n with d hd\n  · Hint \"Now you have two goals. Once you proved the first, you will jump to the second one.\n    This first goal is the base case $n = 0$.\n\n    Recall that you can rewrite the proof of any lemma which is visible\n    in your inventory, or of any assumption displayed above the goal,\n    as long as it is of the form `X = Y`.\"\n    Hint (hidden := true) \"try rewriting `add_zero`.\"\n    rw [add_zero]\n    rfl\n  · Hint \"Now for the second goal. Here you have the induction hypothesis\n    `{hd} : 0 + {d} = {d}`, and you need to prove that `0 + succ {d} = succ {d}`.\"\n    Hint (hidden := true) \"Use `add_succ`.\"\n    rw [add_succ]\n    Hint (hidden := true) \"At this point you see the term `0 + {d}`, so you can use the\n    induction hypothesis with `rw [{hd}]`.\"\n    rw [hd]\n    rfl",
-     "statementDoc": "",
+     "statementDoc": "For all natural numbers $n$, we have $0 + n = n$.",
      "statementName": "zero_add",
      "statementSig": "(n : ℕ) : 0 + n = n",
      "theoremTab": null,
@@ -452,7 +452,7 @@
       "namespace MyNat"
      ],
      "proof": "  Hint (hidden := true) \"You might want to think about whether induction\n  on `a` or `b` is the best idea.\"\n  Branch\n    induction a with _ _\n    Hint \"Induction on `a` will not work here. You are still stuck with an `+ b`.\n    I suggest you delete this line and try a different approach.\"\n    sorry\n  induction b with d hd\n  · rw [add_zero]\n    rw [add_zero]\n    rfl\n  · Hint \"Note that `succ a + {d}` means `(succ a) + {d}`. Put your cursor\n  on any `succ` in the goal or assumptions to see what exactly it's eating.\"\n    rw [add_succ, add_succ, hd]\n    rfl",
-     "statementDoc": "",
+     "statementDoc": "For all natural numbers $a, b$, we have\n$ \\operatorname{succ}(a) + b = \\operatorname{succ}(a + b)$.",
      "statementName": "succ_add",
      "statementSig": "(a b : ℕ) : succ a + b = succ (a + b)",
      "theoremTab": null,
@@ -478,7 +478,7 @@
       "namespace MyNat"
      ],
      "proof": "  Hint (hidden := true) \"Induction on `a` or `b` -- it's all the same in this one.\"\n  induction b with d hd\n  · rw [add_zero, zero_add]\n    rfl\n  · rw [add_succ, succ_add, hd]\n    rfl",
-     "statementDoc": "",
+     "statementDoc": "On the set of natural numbers, addition is commutative.\nIn other words, if `a` and `b` are arbitrary natural numbers, then\n$a + b = b + a$.",
      "statementName": "add_comm",
      "statementSig": "(a b : ℕ) : a + b = b + a",
      "theoremTab": null,
@@ -504,7 +504,7 @@
       "namespace MyNat"
      ],
      "proof": "  Hint \"Remember that when Lean writes `a + b + c`, it means `(a + b) + c`.\n  If you are not sure where the brackets are in an expression, just hover\n  your cursor over it and look at what gets highlighted. For example,\n  hover over both `+` symbols on the left hand side of the goal and\n  you'll see where the invisible brackets are.\"\n  induction c with d hd\n  · rw [add_zero, add_zero]\n    rfl\n  · rw [add_succ, add_succ, hd, add_succ]\n    rfl",
-     "statementDoc": "",
+     "statementDoc": "On the set of natural numbers, addition is associative.\nIn other words, if $a, b$ and $c$ are arbitrary natural numbers, we have\n$ (a + b) + c = a + (b + c). $",
      "statementName": "add_assoc",
      "statementSig": "(a b c : ℕ) : a + b + c = a + (b + c)",
      "theoremTab": null,
@@ -525,7 +525,7 @@
       "namespace MyNat"
      ],
      "proof": "  rw [add_assoc]\n  rw [add_comm b, add_assoc]\n  rfl",
-     "statementDoc": "",
+     "statementDoc": "If $a, b$ and $c$ are arbitrary natural numbers, we have\n$(a + b) + c = (a + c) + b$.",
      "statementName": "add_right_comm",
      "statementSig": "(a b c : ℕ) : a + b + c = a + c + b",
      "theoremTab": null,

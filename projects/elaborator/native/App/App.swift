@@ -27,8 +27,13 @@ struct Exercise: Identifiable, Hashable {
   let id: String
   let title: String
   let world: String
+  /// Full source handed to the elaborator (includes `hiddenPrelude`).
   let initialSource: String
   var isWorldIntro: Bool = false
+  /// Prefix of `initialSource` (imports + namespace) hidden from the SOURCE pane.
+  var hiddenPrelude: String = ""
+  /// Present iff this is an NNG level loaded from nng-levels.json.
+  var nng: NNGLevelInfo? = nil
 }
 
 struct ProofPath: Hashable {
@@ -466,36 +471,96 @@ let worldGroups: [WorldGroup] = {
 
 struct RootView: View {
   @State private var path = NavigationPath()
+  @State private var selectedGame = 0
+  @AppStorage(NNGProgress.key) private var nngCompletedRaw = ""
+
+  private var nngAvailable: Bool { !NNGGameStore.shared.worldGroups.isEmpty }
+
   var body: some View {
     NavigationStack(path: $path) {
       List {
-        ForEach(worldGroups) { group in
-          Section(group.world) {
-            ForEach(group.exercises) { ex in
-              NavigationLink(value: ex) {
-                VStack(alignment: .leading, spacing: 4) {
-                  Text(ex.title)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                  Text(firstLine(ex.initialSource))
-                    .font(.system(size: 12, design: .monospaced))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                }
-                .padding(.vertical, 4)
+        if nngAvailable {
+          Section {
+            Picker("Game", selection: $selectedGame) {
+              Text("Proofs").tag(0)
+              Text("Numbers").tag(1)
+            }
+            .pickerStyle(.segmented)
+          }
+        }
+        if selectedGame == 0 || !nngAvailable {
+          ForEach(worldGroups) { group in
+            Section(group.world) {
+              ForEach(group.exercises) { ex in
+                NavigationLink(value: ex) { row(ex) }
               }
+            }
+          }
+        } else {
+          ForEach(NNGGameStore.shared.worldGroups) { group in
+            Section {
+              ForEach(group.exercises) { ex in
+                NavigationLink(value: ex) { row(ex) }
+              }
+            } header: {
+              nngWorldHeader(group.world)
             }
           }
         }
       }
       .navigationTitle("iOS Lean")
       .navigationDestination(for: Exercise.self) { ex in
-        IntroView(exercise: ex, mode: .lesson)
+        if ex.nng != nil {
+          NNGIntroView(exercise: ex)
+        } else {
+          IntroView(exercise: ex, mode: .lesson)
+        }
       }
       .navigationDestination(for: ProofPath.self) { p in
         ExerciseView(exercise: p.exercise, path: $path)
       }
     }
+  }
+
+  private func row(_ ex: Exercise) -> some View {
+    HStack(spacing: 8) {
+      VStack(alignment: .leading, spacing: 4) {
+        Text(ex.title)
+          .font(.system(size: 15, weight: .semibold, design: .rounded))
+        Text(firstLine(visibleSource(ex)))
+          .font(.system(size: 12, design: .monospaced))
+          .foregroundStyle(.secondary)
+          .lineLimit(1)
+          .truncationMode(.tail)
+      }
+      if ex.nng != nil && nngCompleted.contains(ex.id) {
+        Spacer()
+        Image(systemName: "checkmark.circle.fill")
+          .font(.system(size: 15))
+          .foregroundStyle(.green)
+      }
+    }
+    .padding(.vertical, 4)
+  }
+
+  private func nngWorldHeader(_ world: String) -> some View {
+    VStack(alignment: .leading, spacing: 6) {
+      Text(world)
+      if let intro = NNGGameStore.shared.worldIntros[world], !intro.isEmpty {
+        Text(nngMarkdown(intro.trimmingCharacters(in: .whitespacesAndNewlines)))
+          .font(.system(size: 12))
+          .textCase(nil)
+          .foregroundStyle(.secondary)
+      }
+    }
+  }
+
+  private var nngCompleted: Set<String> {
+    Set(nngCompletedRaw.split(separator: ",").map(String.init))
+  }
+
+  private func visibleSource(_ ex: Exercise) -> String {
+    ex.nng != nil ? nngVisibleSource(ex) : ex.initialSource
   }
 
   private func firstLine(_ s: String) -> String {
