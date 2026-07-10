@@ -6,13 +6,63 @@
     "content": "`Add a b`, with notation `a + b`, is\nthe usual sum of natural numbers. Internally it is defined\nvia the following two hypotheses:\n\n* `add_zero a : a + 0 = a`\n\n* `add_succ a b : a + succ b = succ (a + b)`\n\nOther theorems about naturals, such as `zero_add a : 0 + a = a`, are proved\nby induction using these two basic theorems.",
     "displayName": "+"
    },
+   "LE": {
+    "category": null,
+    "content": "`a ≤ b` is *notation* for `∃ c, b = a + c`.\n\nBecause this game doesn't have negative numbers, this definition\nis mathematically valid.\n\nThis means that if you have a goal of the form `a ≤ b` you can\nmake progress with the `use` tactic, and if you have a hypothesis\n`h : a ≤ b`, you can make progress with `cases h with c hc`.",
+    "displayName": "≤"
+   },
+   "Mul": {
+    "category": null,
+    "content": "`Mul a b`, with notation `a * b`, is the usual\n  product of natural numbers. Internally it is\n  via two axioms:\n\n  * `mul_zero a : a * 0 = 0`\n\n  * `mul_succ a b : a * succ b = a * b + a`\n\nOther theorems about naturals, such as `zero_mul`,\nare proved by induction from these two basic theorems.",
+    "displayName": "*"
+   },
    "MyNat": {
     "category": null,
     "content": "`ℕ` is the natural numbers, just called \\\"numbers\\\" in this game. It's\ndefined via two rules:\n\n* `0 : ℕ` (zero is a number)\n* `succ (n : ℕ) : ℕ` (the successor of a number is a number)\n\n## Game Implementation\n\n*The game uses its own copy of the natural numbers, called `MyNat` with notation `ℕ`.\nIt is distinct from the Lean natural numbers `Nat`, which should hopefully\nnever leak into the natural number game.*",
     "displayName": "ℕ"
+   },
+   "Pow": {
+    "category": null,
+    "content": "`Pow a b`, with notation `a ^ b`, is the usual\n  exponentiation of natural numbers. Internally it is\n  defined via two axioms:\n\n  * `pow_zero a : a ^ 0 = 1`\n\n  * `pow_succ a b : a ^ succ b = a ^ b * a`\n\nNote in particular that `0 ^ 0 = 1`.",
+    "displayName": "^"
    }
   },
   "TacticDoc": {
+   "apply": {
+    "category": null,
+    "content": "## Summary\n\nIf `t : P → Q` is a proof that $P \\implies Q$, and `h : P` is a proof of `P`,\nthen `apply t at h` will change `h` to a proof of `Q`. The idea is that if\nyou know `P` is true, then you can deduce from `t` that `Q` is true.\n\nIf the *goal* is `Q`, then `apply t` will \\\"argue backwards\\\" and change the\ngoal to `P`. The idea here is that if you want to prove `Q`, then by `t`\nit suffices to prove `P`, so you can reduce the goal to proving `P`.\n\n### Example:\n\n`succ_inj x y` is a proof that `succ x = succ y → x = y`.\n\nSo if you have a hypothesis `h : succ (a + 37) = succ (b + 42)`\nthen `apply succ_inj at h` will change `h` to `a + 37 = b + 42`.\nYou could write `apply succ_inj (a + 37) (b + 42) at h`\nbut Lean is smart enough to figure out the inputs to `succ_inj`.\n\n### Example\n\nIf the goal is `a * b = 7`, then `apply succ_inj` will turn the\ngoal into `succ (a * b) = succ 7`.",
+    "displayName": null
+   },
+   "cases": {
+    "category": null,
+    "content": "## Summary\n\nIf `n` is a number, then `cases n with d` will break the goal into two goals,\none with `n = 0` and the other with `n = succ d`.\n\nIf `h` is a proof (for example a hypothesis), then `cases h with...` will break the\nproof up into the pieces used to prove it.\n\n## Example\n\nIf `n : ℕ` is a number, then `cases n with d` will break the goal into two goals,\none with `n` replaced by 0 and the other with `n` replaced by `succ d`. This\ncorresponds to the mathematical idea that every natural number is either `0`\nor a successor.\n\n## Example\n\nIf `h : P ∨ Q` is a hypothesis, then `cases h with hp hq` will turn one goal\ninto two goals, one with a hypothesis `hp : P` and the other with a\nhypothesis `hq : Q`.\n\n## Example\n\nIf `h : False` is a hypothesis, then `cases h` will turn one goal into no goals,\nbecause there are no ways to make a proof of `False`! And if you have no goals left,\nyou have finished the level.\n\n## Example\n\nIf `h : a ≤ b` is a hypothesis, then `cases h with c hc` will create a new number `c`\nand a proof `hc : b = a + c`. This is because the *definition* of `a ≤ b` is\n`∃ c, b = a + c`.",
+    "displayName": null
+   },
+   "contrapose": {
+    "category": null,
+    "content": "# Summary\n\nIf you have a hypothesis\n\n`h : a ≠ b`\n\nand goal\n\n`c ≠ d`\n\nthen `contrapose! h` replaces the set-up with its so-called \\\"contrapositive\\\":\na hypothesis\n\n`h : c = d`\n\nand goal\n\n`a = b`.",
+    "displayName": null
+   },
+   "decide": {
+    "category": null,
+    "content": "# Summary\n\n`decide` will attempt to solve a goal if it can find an algorithm which it\ncan run to solve it.\n\n## Example\n\nA term of type `DecidableEq ℕ` is an algorithm to decide whether two naturals\nare equal or different. Hence, once this term is made and made into an `instance`,\nthe `decide` tactic can use it to solve goals of the form `a = b` or `a ≠ b`.",
+    "displayName": null
+   },
+   "exact": {
+    "category": null,
+    "content": "## Summary\n\nIf the goal is a statement `P`, then `exact h` will close the goal if `h` is a proof of `P`.\n\n### Example\n\nIf the goal is `x = 37` and you have a hypothesis `h : x = 37`\nthen `exact h` will solve the goal.\n\n### Example\n\nIf the goal is `x + 0 = x` then `exact add_zero x` will close the goal.\n\n### Exact needs to be exactly right\n\nNote that `exact add_zero` will *not work* in the previous example;\nfor `exact h` to work, `h` has to be *exactly* a proof of the goal.\n`add_zero` is a proof of `∀ n, n + 0 = n` or, if you like,\na proof of `? + 0 = ?` where `?` needs to be supplied by the user.\nThis is in contrast to `rw` and `apply`, which will \\\"guess the inputs\\\"\nif necessary. If the goal is `x + 0 = x` then `rw [add_zero]`\nand `rw [add_zero x]` will both change the goal to `x = x`,\nbecause `rw` guesses the input to the function `add_zero`.",
+    "displayName": null
+   },
+   "intro": {
+    "category": null,
+    "content": "## Summary\n\nIf the goal is `P → Q`, then `intro h` will introduce `h : P` as a hypothesis,\nand change the goal to `Q`. Mathematically, it says that to prove $P \\implies Q$,\nwe can assume $P$ and then prove $Q$.\n\n### Example:\n\nIf your goal is `x + 1 = y + 1 → x = y` (the way Lean writes $x+1=y+1 \\implies x=y$)\nthen `intro h` will give you a hypothesis $x+1=y+1$ named `h`, and the goal\nwill change to $x=y$.",
+    "displayName": null
+   },
+   "left": {
+    "category": null,
+    "content": "# Summary\nThe `left` tactic changes a goal of `P ∨ Q` into a goal of `P`.\nUse it when your hypotheses guarantee that the reason that `P ∨ Q`\nis true is because in fact `P` is true.\n\nInternally this tactic is just `apply`ing a theorem\nsaying that $P \\implies P \\lor Q.$\n\nNote that this tactic can turn a solvable goal into an unsolvable\none.",
+    "displayName": null
+   },
    "nth_rewrite": {
     "category": null,
     "content": "## Summary\n\nIf `h : X = Y` and there are several `X`s in the goal, then\n`nth_rewrite 3 [h]` will just change the third `X` to a `Y`.\n\n## Example\n\nIf the goal is `2 + 2 = 4` then `nth_rewrite 2 [two_eq_succ_one]`\nwill change the goal to `2 + succ 1 = 4`. In contrast, `rw [two_eq_succ_one]`\nwill change the goal to `succ 1 + succ 1 = 4`.",
@@ -23,9 +73,54 @@
     "content": "## Summary\n\n`rfl` proves goals of the form `X = X`.\n\nIn other words, the `rfl` tactic will close any goal of the\nform `A = B` if `A` and `B` are *identical*.\n\n`rfl` is short for \\\"reflexivity (of equality)\\\".\n\n## Example:\n\nIf the goal looks like this:\n\n```\nx + 37 = x + 37\n```\n\nthen `rfl` will close it. But if it looks like `0 + x = x` then `rfl` won't work, because even\nthough $0+x$ and $x$ are always equal as *numbers*, they are not equal as *terms*.\nThe only term which is identical to `0 + x` is `0 + x`.\n\n## Details\n\n`rfl` is short for \\\"reflexivity of equality\\\".\n\n## Game Implementation\n\n*Note that our `rfl` is weaker than the version used in core Lean and `mathlib`,\nfor pedagogical purposes; mathematicians do not distinguish between propositional\nand definitional equality because they think about definitions in a different way\nto type theorists (`zero_add` and `add_zero` are both \\\"facts\\\" as far\nas mathematicians are concerned, and who cares what the definition of addition is).*",
     "displayName": null
    },
+   "right": {
+    "category": null,
+    "content": "# Summary\nThe `right` tactic changes a goal of `P ∨ Q` into a goal of `Q`.\nUse it when your hypotheses guarantee that the reason that `P ∨ Q`\nis true is because in fact `Q` is true.\n\nInternally this tactic is just `apply`ing a theorem\nsaying that $Q \\implies P \\lor Q.$\n\nNote that this tactic can turn a solvable goal into an unsolvable\none.",
+    "displayName": null
+   },
    "rw": {
     "category": null,
     "content": "## Summary\n\nIf `h` is a proof of an equality `X = Y`, then `rw [h]` will change\nall `X`s in the goal to `Y`s. It's the way to \\\"substitute in\\\".\n\n## Variants\n\n* `rw [← h]` (changes `Y`s to `X`s; get the back arrow by typing `\\left ` or `\\l`.)\n\n* `rw [h1, h2]` (a sequence of rewrites)\n\n* `rw [h] at h2` (changes `X`s to `Y`s in hypothesis `h2`)\n\n* `rw [h] at h1 h2 ⊢` (changes `X`s to `Y`s in two hypotheses and the goal;\nget the `⊢` symbol with `\\|-`.)\n\n* `repeat rw [add_zero]` will keep changing `? + 0` to `?`\nuntil there are no more matches for `? + 0`.\n\n* `nth_rewrite 2 [h]` will change only the second `X` in the goal to `Y`.\n\n### Example:\n\nIf you have the assumption `h : x = y + y` and your goal is\n```\nsucc (x + 0) = succ (y + y)\n```\n\nthen\n\n`rw [add_zero]`\n\nwill change the goal into `succ x = succ (y + y)`, and then\n\n`rw [h]`\n\nwill change the goal into `succ (y + y) = succ (y + y)`, which\ncan be solved with `rfl`.\n\n### Example:\n\nYou can use `rw` to change a hypothesis as well.\nFor example, if you have two hypotheses\n```\nh1 : x = y + 3\nh2 : 2 * y = x\n```\nthen `rw [h1] at h2` will turn `h2` into `h2 : 2 * y = y + 3`.\n\n## Common errors\n\n* You need the square brackets. `rw h` is never correct.\n\n* If `h` is not a *proof* of an *equality* (a statement of the form `A = B`),\nfor example if `h` is a function or an implication,\nthen `rw` is not the tactic you want to use. For example,\n`rw [P = Q]` is never correct: `P = Q` is the theorem *statement*,\nnot the proof. If `h : P = Q` is the proof, then `rw [h]` will work.\n\n## Details\n\nThe `rw` tactic is a way to do \\\"substituting in\\\". There\nare two distinct situations where you can use this tactic.\n\n1) Basic usage: if `h : A = B` is an assumption or\nthe proof of a theorem, and if the goal contains one or more `A`s, then `rw [h]`\nwill change them all to `B`s. The tactic will error\nif there are no `A`s in the goal.\n\n2) Advanced usage: Assumptions coming from theorem proofs\noften have missing pieces. For example `add_zero`\nis a proof that `? + 0 = ?` because `add_zero` really is a function,\nand `?` is the input. In this situation `rw` will look through the goal\nfor any subterm of the form `x + 0`, and the moment it\nfinds one it fixes `?` to be `x` then changes all `x + 0`s to `x`s.\n\nExercise: think about why `rw [add_zero]` changes the term\n`(0 + 0) + (x + 0) + (0 + 0) + (x + 0)` to\n`0 + (x + 0) + 0 + (x + 0)`\n\nIf you can't remember the name of the proof of an equality, look it up in\nthe list of lemmas on the right.\n\n## Targeted usage\n\nIf your goal is `b + c + a = b + (a + c)` and you want to rewrite `a + c`\nto `c + a`, then `rw [add_comm]` will not work because Lean finds another\naddition first and swaps those inputs instead. Use `rw [add_comm a c]` to\nguarantee that Lean rewrites `a + c` to `c + a`. This works because\n`add_comm` is a proof that `?1 + ?2 = ?2 + ?1`, `add_comm a` is a proof\nthat `a + ? = ? + a`, and `add_comm a c` is a proof that `a + c = c + a`.\n\nIf `h : X = Y` then `rw [h]` will turn all `X`s into `Y`s.\nIf you only want to change the 37th occurrence of `X`\nto `Y` then do `nth_rewrite 37 [h]`.",
+    "displayName": null
+   },
+   "simp": {
+    "category": null,
+    "content": "# Overview\n\nLean's simplifier, `simp`, will rewrite every lemma\ntagged with `simp` and every lemma fed to it by the user, as much as it can.\nFurthermore, it will attempt to order variables into an internal order if fed\nlemmas such as `add_comm`, so that it does not go into an infinite loop.",
+    "displayName": null
+   },
+   "simp_add": {
+    "category": null,
+    "content": "# Overview\n\nOur home-made tactic `simp_add` will solve arbitrary goals of\nthe form `a + (b + c) + (d + e) = e + (d + (c + b)) + a`.",
+    "displayName": null
+   },
+   "symm": {
+    "category": null,
+    "content": "## Summary\n\nThe `symm` tactic will change a goal or hypothesis of\nthe form `X = Y` to `Y = X`. It will also work on `X ≠ Y`\nand on `X ↔ Y`.\n\n### Example\n\nIf the goal is `2 + 2 = 4` then `symm` will change it to `4 = 2 + 2`.\n\n### Example\n\nIf `h : 2 + 2 ≠ 5` then `symm at h` will change `h` to `5 ≠ 2 + 2`.",
+    "displayName": null
+   },
+   "tauto": {
+    "category": null,
+    "content": "# Summary\n\nThe `tauto` tactic will solve any goal which can be solved purely by logic (that is, by\ntruth tables).\n\n## Details\n\n`tauto` *does not do magic*! It doesn't know *anything* about addition or multiplication,\nit doesn't even know `add_zero`. The only things that `tauto` knows about numbers\nare firstly that `a = a` and secondly that `0 ≠ 1`, `0 ≠ 2`, `1 ≠ 2` and so on.\nWhat `tauto`'s strength is, is *logic*. If you have a hypothesis `x < 37`\nand another hypothesis `x < 37 → y + z = 42` and your goal is `y + z = 42` then `tauto` will\nsolve this goal, because to solve that goal you don't need to know any facts\nabout inequalities or addition, all you need to know is the rules of logic.\n\n## Example\n\nIf you have `False` as a hypothesis, then `tauto` will solve\nthe goal. This is because a false hypothesis implies any hypothesis.\n\n## Example\n\nIf your goal is `True`, then `tauto` will solve the goal.\n\n## Example\n\nIf you have two hypotheses `h1 : a = 37` and `h2 : a ≠ 37` then `tauto` will\nsolve the goal because it can prove `False` from your hypotheses, and thus\nprove the goal (as `False` implies anything).\n\n## Example\n\nIf you have one hypothesis `h : a ≠ a` then `tauto` will solve the goal because\n`tauto` is smart enough to know that `a = a` is true, which gives the contradiction we seek.\n\n## Example\n\nIf you have a hypothesis `h : 0 = 1` then `tauto` will solve the goal, because\n`tauto` knows `0 ≠ 1` and this is enough to prove `False`, which implies any goal.\n\n## Example\n\nIf you have a hypothesis of the form `a = 0 → a * b = 0` and your goal is `a * b ≠ 0 → a ≠ 0`, then\n`tauto` will solve the goal, because the goal is logically equivalent to the hypothesis.\nIf you switch the goal and hypothesis in this example, `tauto` would solve it too.",
+    "displayName": null
+   },
+   "trivial": {
+    "category": null,
+    "content": "# Summary\n\n`trivial` will solve the goal `True`.",
+    "displayName": null
+   },
+   "use": {
+    "category": null,
+    "content": "## Summary\n\nThe `use` tactic makes progress with goals which claim something *exists*.\nIf the goal claims that some `x` exists with some property, and you know\nthat `x = 37` will work, then `use 37` will make progress.\n\nBecause `a ≤ b` is notation for \\\"there exists `c` such that `b = a + c`\\\",\nyou can make progress on goals of the form `a ≤ b` by `use`ing the\nnumber which is morally `b - a` (i.e. `use b - a`)\n\nAny of the following examples is possible assuming the type of the argument passed to the `use` function is accurate:\n\n- `use 37`\n- `use a`\n- `use a * a + 1`",
+    "displayName": null
+   },
+   "xyzzy": {
+    "category": null,
+    "content": "`xyzzy` is an ancient magic spell, believed to be the origin of the\nmodern word `sorry`. The game won't complain - or notice - if you\nprove anything with `xyzzy`.",
+    "displayName": null
+   },
+   "«have»": {
+    "category": null,
+    "content": "# Summary\n\nThe `have` tactic can be used to add new hypotheses to a level, but of course\nyou have to prove them.\n\n\n## Example\n\nThe simplest usage is like this. If you have `a` in your context and you execute\n\n`have ha : a = 0`\n\nthen you will get a new goal `a = 0` to prove, and after you've proved\nit you will have a new hypothesis `ha : a = 0` in your original goal.\n\n## Example\n\nIf you already have a proof of what you want to `have`, you\ncan just create it immediately. For example, if you have `a` and `b`\nnumber objects, then\n\n`have h2 : succ a = succ b → a = b := succ_inj a b`\n\nwill directly add a new hypothesis `h2 : succ a = succ b → a = b`\nto the context, because you just supplied the proof of it (`succ_inj a b`).\n\n## Example\n\nIf you have a proof to hand, then you don't even need to state what you\nare proving. For example\n\n`have h2 := succ_inj a b`\n\nwill add `h2 : succ a = succ b → a = b` as a hypothesis.",
     "displayName": null
    },
    "«repeat»": {
@@ -45,10 +140,55 @@
     "content": "`add_comm x y` is a proof of `x + y = y + x`.",
     "displayName": "add_comm"
    },
+   "MyNat.add_left_cancel": {
+    "category": "+",
+    "content": "`add_left_cancel a b n` is the theorem that $n+a=n+b \\implies a=b.$",
+    "displayName": "add_left_cancel"
+   },
+   "MyNat.add_left_comm": {
+    "category": "+",
+    "content": "`add_left_comm a b c` is a proof that `a + (b + c) = b + (a + c)`.",
+    "displayName": "add_left_comm"
+   },
+   "MyNat.add_left_eq_self": {
+    "category": "+",
+    "content": "`add_left_eq_self x y` is the theorem that $x + y = y \\implies x=0.$",
+    "displayName": "add_left_eq_self"
+   },
+   "MyNat.add_left_eq_zero": {
+    "category": "+",
+    "content": "A proof that $a+b=0 \\implies b=0$.",
+    "displayName": "add_left_eq_zero"
+   },
+   "MyNat.add_mul": {
+    "category": "*",
+    "content": "`add_mul a b c` is a proof that $(a+b)c=ac+bc$.",
+    "displayName": "add_mul"
+   },
+   "MyNat.add_right_cancel": {
+    "category": "+",
+    "content": "`add_right_cancel a b n` is the theorem that $a+n=b+n \\implies a=b.$",
+    "displayName": "add_right_cancel"
+   },
    "MyNat.add_right_comm": {
     "category": "+",
     "content": "`add_right_comm a b c` is a proof that `(a + b) + c = (a + c) + b`\n\nIn Lean, `a + b + c` means `(a + b) + c`, so this result gets displayed\nas `a + b + c = a + c + b`.",
     "displayName": "add_right_comm"
+   },
+   "MyNat.add_right_eq_self": {
+    "category": "+",
+    "content": "`add_right_eq_self x y` is the theorem that $x + y = x \\implies y=0.$",
+    "displayName": "add_right_eq_self"
+   },
+   "MyNat.add_right_eq_zero": {
+    "category": "+",
+    "content": "A proof that $a+b=0 \\implies a=0$.",
+    "displayName": "add_right_eq_zero"
+   },
+   "MyNat.add_sq": {
+    "category": "^",
+    "content": "`add_sq a b` is the statement that $(a+b)^2=a^2+b^2+2ab.$",
+    "displayName": "add_sq"
    },
    "MyNat.add_succ": {
     "category": "+",
@@ -60,15 +200,200 @@
     "content": "`add_zero a` is a proof that `a + 0 = a`.\n\n## Summary\n\n`add_zero` is really a function, which\neats a number, and returns a proof of a theorem\nabout that number. For example `add_zero 37` is\na proof that `37 + 0 = 37`.\n\nThe `rw` tactic will accept `rw [add_zero]`\nand will try to figure out which number you omitted\nto input.\n\n## Details\n\nA mathematician sometimes thinks of `add_zero`\nas \\\"one thing\\\", namely a proof of $\\forall n ∈ ℕ, n + 0 = n$.\nThis is just another way of saying that it's a function which\ncan eat any number n and will return a proof that `n + 0 = n`.",
     "displayName": "add_zero"
    },
+   "MyNat.eq_succ_of_ne_zero": {
+    "category": "≤",
+    "content": "`eq_succ_of_ne_zero a` is a proof that `a ≠ 0 → ∃ n, a = succ n`.",
+    "displayName": "eq_succ_of_ne_zero"
+   },
    "MyNat.four_eq_succ_three": {
     "category": "012",
     "content": "`four_eq_succ_three` is a proof of `4 = succ 3`.",
     "displayName": "four_eq_succ_three"
    },
+   "MyNat.is_zero_succ": {
+    "category": "Peano",
+    "content": "`is_zero_succ a` is a proof of `is_zero (succ a) = False`.",
+    "displayName": "is_zero_succ"
+   },
+   "MyNat.is_zero_zero": {
+    "category": "Peano",
+    "content": "`is_zero_zero` is a proof of `is_zero 0 = True`.",
+    "displayName": "is_zero_zero"
+   },
+   "MyNat.le_antisymm": {
+    "category": "≤",
+    "content": "`le_antisymm x y` is a proof that if `x ≤ y` and `y ≤ x` then `x = y`.",
+    "displayName": "le_antisymm"
+   },
+   "MyNat.le_mul_right": {
+    "category": "≤",
+    "content": "`le_mul_right a b` is a proof that `a * b ≠ 0 → a ≤ a * b`.\n\nIt's one way of saying that a divisor of a positive number\nhas to be at most that number.",
+    "displayName": "le_mul_right"
+   },
+   "MyNat.le_one": {
+    "category": "≤",
+    "content": "`le_one x` is a proof that if `x ≤ 1` then `x = 0` or `x = 1`.",
+    "displayName": "le_one"
+   },
+   "MyNat.le_refl": {
+    "category": "≤",
+    "content": "`le_refl x` is a proof of `x ≤ x`.\n\nThe reason for the name is that this lemma is \"reflexivity of $\\le$\"",
+    "displayName": "le_refl"
+   },
+   "MyNat.le_succ_self": {
+    "category": "≤",
+    "content": "`le_succ_self x` is a proof that `x ≤ succ x`.",
+    "displayName": "le_succ_self"
+   },
+   "MyNat.le_total": {
+    "category": "≤",
+    "content": "`le_total x y` is a proof that `x ≤ y` or `y ≤ x`.",
+    "displayName": "le_total"
+   },
+   "MyNat.le_trans": {
+    "category": "≤",
+    "content": "`le_trans x y z` is a proof that if `x ≤ y` and `y ≤ z` then `x ≤ z`.\nMore precisely, it is a proof that `x ≤ y → (y ≤ z → x ≤ z)`. In words,\nIf $x \\le y$ then (pause) if $y \\le z$ then $x \\le z$.\n\n## A note on associativity\n\nIn Lean, `a + b + c` means `(a + b) + c`, because `+` is left associative. However\n`→` is right associative. This means that `x ≤ y → y ≤ z → x ≤ z` in Lean means\nexactly that `≤` is transitive. This is different to how mathematicians use\n$P \\implies Q \\implies R$; for them, this usually means that $P \\implies Q$\nand $Q \\implies R$.",
+    "displayName": "le_trans"
+   },
+   "MyNat.le_two": {
+    "category": "≤",
+    "content": "`le_two x` is a proof that if `x ≤ 2` then `x = 0` or `x = 1` or `x = 2`.",
+    "displayName": "le_two"
+   },
+   "MyNat.le_zero": {
+    "category": "≤",
+    "content": "`le_zero x` is a proof of the implication `x ≤ 0 → x = 0`.",
+    "displayName": "le_zero"
+   },
+   "MyNat.mul_add": {
+    "category": "*",
+    "content": "Multiplication distributes\nover addition on the left.\n\n`mul_add a b c` is the proof that `a * (b + c) = a * b + a * c`.",
+    "displayName": "mul_add"
+   },
+   "MyNat.mul_assoc": {
+    "category": "*",
+    "content": "`mul_assoc a b c` is a proof that `(a * b) * c = a * (b * c)`.\n\nNote that when Lean says `a * b * c` it means `(a * b) * c`.\n\nNote that `(a * b) * c = a * (b * c)` cannot be proved by \\\"pure thought\\\":\nfor example subtraction is not associative, as `(6 - 2) - 1` is not\nequal to `6 - (2 - 1)`.",
+    "displayName": "mul_assoc"
+   },
+   "MyNat.mul_comm": {
+    "category": "*",
+    "content": "`mul_comm` is the proof that multiplication is commutative. More precisely,\n`mul_comm a b` is the proof that `a * b = b * a`.",
+    "displayName": "mul_comm"
+   },
+   "MyNat.mul_eq_zero": {
+    "category": "*",
+    "content": "`mul_eq_zero a b` is a proof that if `a * b = 0` then `a = 0` or `b = 0`.",
+    "displayName": "mul_eq_zero"
+   },
+   "MyNat.mul_le_mul_right": {
+    "category": "*",
+    "content": "`mul_le_mul_right a b t` is a proof that `a ≤ b → a * t ≤ b * t`.",
+    "displayName": "mul_le_mul_right"
+   },
+   "MyNat.mul_left_cancel": {
+    "category": "*",
+    "content": "`mul_left_cancel a b c` is a proof that if `a ≠ 0` and `a * b = a * c` then `b = c`.",
+    "displayName": "mul_left_cancel"
+   },
+   "MyNat.mul_left_ne_zero": {
+    "category": "*",
+    "content": "`mul_left_ne_zero a b` is a proof that `a * b ≠ 0 → b ≠ 0`.",
+    "displayName": "mul_left_ne_zero"
+   },
+   "MyNat.mul_ne_zero": {
+    "category": "*",
+    "content": "`mul_ne_zero a b` is a proof that if `a ≠ 0` and `b ≠ 0` then `a * b ≠ 0`.",
+    "displayName": "mul_ne_zero"
+   },
+   "MyNat.mul_one": {
+    "category": "*",
+    "content": "`mul_one m` is the proof that `m * 1 = m`.",
+    "displayName": "mul_one"
+   },
+   "MyNat.mul_pow": {
+    "category": "^",
+    "content": "`mul_pow a b n` is a proof that $(ab)^n=a^nb^n.$",
+    "displayName": "mul_pow"
+   },
+   "MyNat.mul_right_eq_one": {
+    "category": "*",
+    "content": "`mul_right_eq_one a b` is a proof that `a * b = 1 → a = 1`.",
+    "displayName": "mul_right_eq_one"
+   },
+   "MyNat.mul_right_eq_self": {
+    "category": "*",
+    "content": "`mul_right_eq_self a b` is a proof that if `a ≠ 0` and `a * b = a` then `b = 1`.",
+    "displayName": "mul_right_eq_self"
+   },
+   "MyNat.mul_succ": {
+    "category": "*",
+    "content": "`mul_succ a b` is the proof that `a * succ b = a * b + a`.",
+    "displayName": "mul_succ"
+   },
+   "MyNat.mul_zero": {
+    "category": "*",
+    "content": "`mul_zero m` is the proof that `m * 0 = 0`.",
+    "displayName": "mul_zero"
+   },
    "MyNat.one_eq_succ_zero": {
     "category": "012",
     "content": "`one_eq_succ_zero` is a proof of `1 = succ 0`.\"",
     "displayName": "one_eq_succ_zero"
+   },
+   "MyNat.one_le_of_ne_zero": {
+    "category": "≤",
+    "content": "`one_le_of_ne_zero a` is a proof that `a ≠ 0 → 1 ≤ a`.",
+    "displayName": "one_le_of_ne_zero"
+   },
+   "MyNat.one_mul": {
+    "category": "*",
+    "content": "`one_mul m` is the proof `1 * m = m`.",
+    "displayName": "one_mul"
+   },
+   "MyNat.one_ne_zero": {
+    "category": "012",
+    "content": "`one_ne_zero` is a proof that `1 ≠ 0`.",
+    "displayName": "one_ne_zero"
+   },
+   "MyNat.one_pow": {
+    "category": "^",
+    "content": "`one_pow n` is a proof that $1^n=1$.",
+    "displayName": "one_pow"
+   },
+   "MyNat.pow_add": {
+    "category": "^",
+    "content": "`pow_add a m n` is a proof that $a^{m+n}=a^ma^n.$",
+    "displayName": "pow_add"
+   },
+   "MyNat.pow_one": {
+    "category": "^",
+    "content": "`pow_one a` says that `a ^ 1 = a`.\n\nNote that this is not quite true by definition: `a ^ 1` is\ndefined to be `a ^ 0 * a` so it's `1 * a`, and to prove\nthat this is equal to `a` you need to use induction somewhere.",
+    "displayName": "pow_one"
+   },
+   "MyNat.pow_pow": {
+    "category": "^",
+    "content": "`pow_pow a m n` is a proof that $(a^m)^n=a^{mn}.$",
+    "displayName": "pow_pow"
+   },
+   "MyNat.pow_succ": {
+    "category": "^",
+    "content": "`pow_succ a b : a ^ (succ b) = a ^ b * a` is one of the\ntwo axioms defining exponentiation in this game.",
+    "displayName": "pow_succ"
+   },
+   "MyNat.pow_two": {
+    "category": "^",
+    "content": "`pow_two a` says that `a ^ 2 = a * a`.",
+    "displayName": "pow_two"
+   },
+   "MyNat.pow_zero": {
+    "category": "^",
+    "content": "`pow_zero a : a ^ 0 = 1` is one of the two axioms\ndefining exponentiation in this game.",
+    "displayName": "pow_zero"
+   },
+   "MyNat.pred_succ": {
+    "category": "Peano",
+    "content": "`pred_succ n` is a proof of `pred (succ n) = n`.",
+    "displayName": "pred_succ"
    },
    "MyNat.succ_add": {
     "category": "+",
@@ -80,6 +405,31 @@
     "content": "`succ_eq_add_one n` is the proof that `succ n = n + 1`.",
     "displayName": "succ_eq_add_one"
    },
+   "MyNat.succ_inj": {
+    "category": "Peano",
+    "content": "# Statement\n\nIf $a$ and $b$ are numbers, then\n`succ_inj a b` is the proof that\n$ (\\operatorname{succ}(a) = \\operatorname{succ}(b)) \\implies a=b$.\n\n## More technical details\n\nThere are other ways to think about `succ_inj`.\n\nYou can think about `succ_inj` itself as a function which takes two\nnumbers $$a$$ and $$b$$ as input, and outputs a proof of\n$ ( \\operatorname{succ}(a) = \\operatorname{succ}(b)) \\implies a=b$.\n\nYou can think of `succ_inj` itself as a proof; it is the proof\nthat `succ` is an injective function. In other words,\n`succ_inj` is a proof of\n$\\forall a, b \\in  \\mathbb{N}, ( \\operatorname{succ}(a) = \\operatorname{succ}(b)) \\implies a=b$.\n\n`succ_inj` was postulated as an axiom by Peano, but\nin Lean it can be proved using `pred`, a mathematically\npathological function.",
+    "displayName": "succ_inj"
+   },
+   "MyNat.succ_le_succ": {
+    "category": "≤",
+    "content": "`succ_le_succ x y` is a proof that if `succ x ≤ succ y` then `x ≤ y`.",
+    "displayName": "succ_le_succ"
+   },
+   "MyNat.succ_mul": {
+    "category": "*",
+    "content": "`succ_mul a b` is the proof that `succ a * b = a * b + b`.\n\nIt could be deduced from `mul_succ` and `mul_comm`, however this argument\nwould be circular because the proof of `mul_comm` uses `mul_succ`.",
+    "displayName": "succ_mul"
+   },
+   "MyNat.succ_ne_succ": {
+    "category": "Peano",
+    "content": "`succ_ne_succ m n` is the proof that `m ≠ n → succ m ≠ succ n`.",
+    "displayName": "succ_ne_succ"
+   },
+   "MyNat.succ_ne_zero": {
+    "category": "Peano",
+    "content": "`succ_ne_zero a` is a proof of `succ a ≠ 0`.",
+    "displayName": "succ_ne_zero"
+   },
    "MyNat.three_eq_succ_two": {
     "category": "012",
     "content": "`three_eq_succ_two` is a proof of `3 = succ 2`.",
@@ -90,10 +440,45 @@
     "content": "`two_eq_succ_one` is a proof of `2 = succ 1`.",
     "displayName": "two_eq_succ_one"
    },
+   "MyNat.two_mul": {
+    "category": "*",
+    "content": "`two_mul m` is the proof that `2 * m = m + m`.",
+    "displayName": "two_mul"
+   },
    "MyNat.zero_add": {
     "category": "+",
     "content": "`zero_add x` is the proof of `0 + x = x`.\n\n`zero_add` is a `simp` lemma, because replacing `0 + x` by `x`\nis almost always what you want to do if you're simplifying an expression.",
     "displayName": "zero_add"
+   },
+   "MyNat.zero_le": {
+    "category": "≤",
+    "content": "`zero_le x` is a proof that `0 ≤ x`.",
+    "displayName": "zero_le"
+   },
+   "MyNat.zero_mul": {
+    "category": "*",
+    "content": "`zero_mul x` is the proof that `0 * x = 0`.\n\nNote: `zero_mul` is a `simp` lemma.",
+    "displayName": "zero_mul"
+   },
+   "MyNat.zero_ne_one": {
+    "category": "012",
+    "content": "`zero_ne_one` is a proof of `0 ≠ 1`.",
+    "displayName": "zero_ne_one"
+   },
+   "MyNat.zero_ne_succ": {
+    "category": "Peano",
+    "content": "`zero_ne_succ n` is the proof that `0 ≠ succ n`.\n\nIn Lean, `a ≠ b` is *defined to mean* `a = b → False`. Hence\n`zero_ne_succ n` is really a proof of `0 = succ n → False`.\nHere `False` is a generic false statement. This means that\nyou can `apply zero_ne_succ at h` if `h` is a proof of `0 = succ n`.",
+    "displayName": "zero_ne_succ"
+   },
+   "MyNat.zero_pow_succ": {
+    "category": "^",
+    "content": "Although $0^0=1$ in this game, $0^n=0$ if $n>0$, i.e., if\n$n$ is a successor.",
+    "displayName": "zero_pow_succ"
+   },
+   "MyNat.zero_pow_zero": {
+    "category": "^",
+    "content": "Mathematicians sometimes argue that `0 ^ 0 = 0` is also\na good convention. But it is not a good convention in this\ngame; all the later levels come out beautifully with the\nconvention that `0 ^ 0 = 1`.",
+    "displayName": "zero_pow_zero"
    }
   }
  },
@@ -534,6 +919,1824 @@
     }
    ],
    "title": "Addition World"
+  },
+  {
+   "id": "Multiplication",
+   "introduction": " How should we define `37 * x`? Just like addition, we need to give definitions\nwhen $x=0$ and when $x$ is a successor.\n\nThe zero case is easy: we define `37 * 0` to be `0`. Now say we know\n`37 * d`. What should `37 * succ d` be? Well, that's $(d+1)$ $37$s,\nso it should be `37 * d + 37`.\n\nHere are the definitions in Lean.\n\n  * `mul_zero a : a * 0 = 0`\n  * `mul_succ a d : a * succ d = a * d + a`\n\nIn this world, we must not only prove facts about multiplication like `a * b = b * a`,\nwe must also prove facts about how multiplication interacts with addition, like `a * (b + c) = a * b + a * c`.\nLet's get started.\n",
+   "levels": [
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\n\nSee the new \"*\" tab in your lemmas, containing `mul_zero` and `mul_succ`.\nRight now these are the only facts we know about multiplication.\nLet's prove nine more.\n\nLet's start with a warm-up: no induction needed for this one,\nbecause we know `1` is a successor.\n",
+     "level": 1,
+     "module": "Game.Levels.Multiplication.L01mul_one",
+     "newDefinitions": [
+      "Mul"
+     ],
+     "newTactics": [],
+     "newTheorems": [
+      "MyNat.mul_zero",
+      "MyNat.mul_succ"
+     ],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  rw [one_eq_succ_zero]\n  rw [mul_succ]\n  rw [mul_zero]\n  rw [zero_add]\n  rfl",
+     "statementDoc": "For any natural number $m$, we have $ m \\times 1 = m$.",
+     "statementName": "mul_one",
+     "statementSig": "(m : ℕ) : m * 1 = m",
+     "theoremTab": null,
+     "title": "mul_one",
+     "world": "Multiplication"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nOur first challenge is `mul_comm x y : x * y = y * x`,\nand we want to prove it by induction. The zero\ncase will need `mul_zero` (which we have)\nand `zero_mul` (which we don't), so let's\nstart with this.\n",
+     "level": 2,
+     "module": "Game.Levels.Multiplication.L02zero_mul",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  induction m with d hd\n  · rw [mul_zero]\n    rfl\n  · rw [mul_succ]\n    rw [hd]\n    rw [add_zero]\n    rfl",
+     "statementDoc": "For all natural numbers $m$, we have $ 0 \\times m = 0$.",
+     "statementName": "zero_mul",
+     "statementSig": "(m : ℕ) : 0 * m = 0",
+     "theoremTab": null,
+     "title": "zero_mul",
+     "world": "Multiplication"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nSimilarly we have `mul_succ`\nbut we're going to need `succ_mul` (guess what it says -- maybe you\nare getting the hang of Lean's naming conventions).\n\nThe last level from addition world might help you in this level.\nIf you can't remember what it is, you can go back to the\nhome screen by clicking the house icon and then taking a look.\nYou won't lose any progress.\n",
+     "level": 3,
+     "module": "Game.Levels.Multiplication.L03succ_mul",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  induction b with d hd\n  · rw [mul_zero]\n    rw [mul_zero]\n    rw [add_zero]\n    rfl\n  · rw [mul_succ]\n    rw [mul_succ]\n    rw [hd]\n    rw [add_succ]\n    rw [add_succ]\n    rw [add_right_comm]\n    rfl",
+     "statementDoc": "For all natural numbers $a$ and $b$, we have\n$(\\operatorname{succ}\\ a) \\times b = a\\times b + b$.",
+     "statementName": "succ_mul",
+     "statementSig": "(a b : ℕ) : succ a * b = a * b + b",
+     "theoremTab": null,
+     "title": "succ_mul",
+     "world": "Multiplication"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nThe first sub-boss of Multiplication World is `mul_comm x y : x * y = y * x`.\n\nWhen you've proved this theorem we will have \"spare\" proofs\nsuch as `zero_mul`, which is now easily deducible from `mul_zero`.\nBut we'll keep hold of these proofs anyway, because it's convenient\nto have exactly the right tool for a job.\n",
+     "level": 4,
+     "module": "Game.Levels.Multiplication.L04mul_comm",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  induction b with d hd\n  · rw [zero_mul]\n    rw [mul_zero]\n    rfl\n  · rw [succ_mul]\n    rw [← hd]\n    rw [mul_succ]\n    rfl",
+     "statementDoc": "Multiplication is commutative.",
+     "statementName": "mul_comm",
+     "statementSig": "(a b : ℕ) : a * b = b * a",
+     "theoremTab": null,
+     "title": "mul_comm",
+     "world": "Multiplication"
+    },
+    {
+     "conclusion": "\nHere's my solution:\n```\nrw [mul_comm, mul_one]\nrfl\n```\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nYou can prove $1\\times m=m$ in at least three ways.\nEither by induction, or by using `succ_mul`, or\nby using commutativity. Which do you think is quickest?\n",
+     "level": 5,
+     "module": "Game.Levels.Multiplication.L05one_mul",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  rw [mul_comm, mul_one]\n  rfl",
+     "statementDoc": "For any natural number $m$, we have $ 1 \\times m = m$.",
+     "statementName": "one_mul",
+     "statementSig": "(m : ℕ): 1 * m = m",
+     "theoremTab": null,
+     "title": "one_mul",
+     "world": "Multiplication"
+    },
+    {
+     "conclusion": "\nHere's my solution:\n```\nrw [two_eq_succ_one, succ_mul, one_mul]\nrfl\n```\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nThis level is more important than you think; it plays\na useful role when battling a big boss later on.\n",
+     "level": 6,
+     "module": "Game.Levels.Multiplication.L06two_mul",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  rw [two_eq_succ_one, succ_mul, one_mul]\n  rfl",
+     "statementDoc": "For any natural number $m$, we have $ 2 \\times m = m+m$.",
+     "statementName": "two_mul",
+     "statementSig": "(m : ℕ): 2 * m = m + m",
+     "theoremTab": null,
+     "title": "two_mul",
+     "world": "Multiplication"
+    },
+    {
+     "conclusion": "\nHere's my solution:\n```\ninduction c with d hd\nrw [add_zero, mul_zero, add_zero]\nrfl\nrw [add_succ, mul_succ, hd, mul_succ, add_assoc]\nrfl\n```\n\nInducting on `a` or `b` also works, but might take longer.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "You can do induction on any of the three variables. Some choices\n  are harder to push through than others. Can you do the inductive step in\n  5 rewrites only?"
+      },
+      {
+       "hidden": true,
+       "text": "Induction on `a` is the most troublesome, then `b`,\n  and `c` is the easiest."
+      }
+     ],
+     "introduction": "\nOur next goal is \"left and right distributivity\",\nmeaning $a(b+c)=ab+ac$ and $(b+c)a=ba+ca$. Rather than\nthese slightly pompous names, the name of the proofs\nin Lean are descriptive. Let's start with\n`mul_add a b c`, the proof of `a * (b + c) = a * b + a * c`.\nNote that the left hand side contains a multiplication\nand then an addition.\n",
+     "level": 7,
+     "module": "Game.Levels.Multiplication.L07mul_add",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Branch\n    induction b with b hb\n    rw [zero_add, mul_zero, zero_add]\n    rfl\n    rw [succ_add, mul_succ, mul_succ, add_right_comm, hb]\n    rfl\n  Branch\n    induction a with a ha\n    rw [zero_mul, zero_mul, zero_mul, zero_add]\n    rfl\n    rw [succ_mul, succ_mul, succ_mul, ha]\n    repeat rw [add_assoc]\n    rw [← add_assoc (a*c), add_comm _ b, add_assoc]\n    rfl\n  Hint \"You can do induction on any of the three variables. Some choices\n  are harder to push through than others. Can you do the inductive step in\n  5 rewrites only?\"\n  Hint (hidden := true) \"Induction on `a` is the most troublesome, then `b`,\n  and `c` is the easiest.\"\n  induction c with d hd\n  rw [add_zero, mul_zero, add_zero]\n  rfl\n  rw [add_succ, mul_succ, hd, mul_succ, add_assoc]\n  rfl",
+     "statementDoc": "Multiplication is distributive over addition on the left.\nIn other words, for all natural numbers $a$, $b$ and $c$, we have\n$a(b + c) = ab + ac$.",
+     "statementName": "mul_add",
+     "statementSig": "(a b c : ℕ) : a * (b + c) = a * b + a * c",
+     "theoremTab": null,
+     "title": "mul_add",
+     "world": "Multiplication"
+    },
+    {
+     "conclusion": "\nHere's my proof:\n```\nrw [mul_comm, mul_add]\nrepeat rw [mul_comm c]\nrfl\n```\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\n`add_mul` is just as fiddly to prove by induction; but there's a trick\nwhich avoids it. Can you spot it?\n",
+     "level": 8,
+     "module": "Game.Levels.Multiplication.L08add_mul",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  rw [mul_comm, mul_add]\n  repeat rw [mul_comm c]\n  rfl",
+     "statementDoc": "Addition is distributive over multiplication.\nIn other words, for all natural numbers $a$, $b$ and $c$, we have\n$(a + b) \\times c = ac + bc$.",
+     "statementName": "add_mul",
+     "statementSig": "(a b c : ℕ) : (a + b) * c = a * c + b * c",
+     "theoremTab": null,
+     "title": "add_mul",
+     "world": "Multiplication"
+    },
+    {
+     "conclusion": "\nA passing mathematician notes that you've proved\nthat the natural numbers are a commutative semiring.\n\nIf you want to begin your journey to the final boss, head for Power World.\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nWe now have enough to prove that multiplication is associative,\nthe boss level of multiplication world. Good luck!\n",
+     "level": 9,
+     "module": "Game.Levels.Multiplication.L09mul_assoc",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  induction c with d hd\n  · rw [mul_zero, mul_zero, mul_zero]\n    rfl\n  · rw [mul_succ]\n    rw [mul_succ]\n    rw [hd]\n    rw [mul_add]\n    rfl",
+     "statementDoc": "Multiplication is associative.\nIn other words, for all natural numbers $a$, $b$ and $c$, we have\n$(ab)c = a(bc)$.",
+     "statementName": "mul_assoc",
+     "statementSig": "(a b c : ℕ) : (a * b) * c = a * (b * c)",
+     "theoremTab": null,
+     "title": "mul_assoc",
+     "world": "Multiplication"
+    }
+   ],
+   "title": "Multiplication World"
+  },
+  {
+   "id": "Power",
+   "introduction": "\nThis world introduces exponentiation. If you want to define `37 ^ n`\nthen, as always, you will need to know what `37 ^ 0` is, and\nwhat `37 ^ (succ d)` is, given only `37 ^ d`.\n\nYou can probably guess the names of the general theorems:\n\n  * `pow_zero (a : ℕ) : a ^ 0 = 1`\n  * `pow_succ (a b : ℕ) : a ^ succ b = a ^ b * a`\n\nUsing only these, can you get past the final boss level?\n\nThe levels in this world were designed by Sian Carey, a UROP student\nat Imperial College London, funded by a Mary Lister McCammon Fellowship\nin the summer of 2019. Thanks to Sian and also thanks to Imperial\nCollege for funding her.\n",
+   "levels": [
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "Mathematicians sometimes debate what `0 ^ 0` is;\nthe answer depends, of course, on your definitions. In this\ngame, `0 ^ 0 = 1`. See if you can prove it.\n\nCheck out the *Pow* tab in your list of theorems\nto see the new proofs which are available.",
+     "level": 1,
+     "module": "Game.Levels.Power.L01zero_pow_zero",
+     "newDefinitions": [
+      "Pow"
+     ],
+     "newTactics": [],
+     "newTheorems": [
+      "MyNat.pow_zero"
+     ],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  rw [pow_zero]\n  rfl",
+     "statementDoc": "$0 ^ 0 = 1$",
+     "statementName": "zero_pow_zero",
+     "statementSig": ": (0 : ℕ) ^ 0 = 1",
+     "theoremTab": null,
+     "title": "zero_pow_zero",
+     "world": "Power"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "We've just seen that `0 ^ 0 = 1`, but if `n`\nis a successor, then `0 ^ n = 0`. We prove that here.",
+     "level": 2,
+     "module": "Game.Levels.Power.L02zero_pow_succ",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [
+      "MyNat.pow_succ"
+     ],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  rw [pow_succ]\n  rw [mul_zero]\n  rfl",
+     "statementDoc": "For all numbers $m$, $0 ^{\\operatorname{succ} (m)} = 0$.",
+     "statementName": "zero_pow_succ",
+     "statementSig": "(m : ℕ) : (0 : ℕ) ^ (succ m) = 0",
+     "theoremTab": null,
+     "title": "zero_pow_succ",
+     "world": "Power"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "",
+     "level": 3,
+     "module": "Game.Levels.Power.L03pow_one",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  rw [one_eq_succ_zero]\n  rw [pow_succ]\n  rw [pow_zero]\n  rw [one_mul]\n  rfl",
+     "statementDoc": "For all naturals $a$, $a ^ 1 = a$.",
+     "statementName": "pow_one",
+     "statementSig": "(a : ℕ) : a ^ 1 = a",
+     "theoremTab": null,
+     "title": "pow_one",
+     "world": "Power"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "",
+     "level": 4,
+     "module": "Game.Levels.Power.L04one_pow",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  induction m with t ht\n  · rw [pow_zero]\n    rfl\n  · rw [pow_succ]\n    rw [ht]\n    rw [mul_one]\n    rfl",
+     "statementDoc": "For all naturals $m$, $1 ^ m = 1$.",
+     "statementName": "one_pow",
+     "statementSig": "(m : ℕ) : (1 : ℕ) ^ m = 1",
+     "theoremTab": null,
+     "title": "one_pow",
+     "world": "Power"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "Note: this lemma will be useful for the final boss!",
+     "level": 5,
+     "module": "Game.Levels.Power.L05pow_two",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  rw [two_eq_succ_one]\n  rw [pow_succ]\n  rw [pow_one]\n  rfl",
+     "statementDoc": "For all naturals $a$, $a ^ 2 = a \\times a$.",
+     "statementName": "pow_two",
+     "statementSig": "(a : ℕ) : a ^ 2 = a * a",
+     "theoremTab": null,
+     "title": "pow_two",
+     "world": "Power"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "Let's now begin our approach to the final boss,\nby proving some more subtle facts about powers.",
+     "level": 6,
+     "module": "Game.Levels.Power.L06pow_add",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  induction n with t ht\n  · rw [add_zero, pow_zero, mul_one]\n    rfl\n  · rw [add_succ, pow_succ, pow_succ, ht, mul_assoc]\n    rfl",
+     "statementDoc": "For all naturals $a$, $m$, $n$, we have $a^{m + n} = a ^ m  a ^ n$.",
+     "statementName": "pow_add",
+     "statementSig": "(a m n : ℕ) : a ^ (m + n) = a ^ m * a ^ n",
+     "theoremTab": null,
+     "title": "pow_add",
+     "world": "Power"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nThe music gets ever more dramatic, as we explore\nthe interplay between exponentiation and multiplication.\n\nIf you're having trouble exchanging the right `a * b`\nbecause `rw [mul_comm]` swaps the wrong multiplication,\nthen read the documentation of `rw` for tips on how to fix this.\n",
+     "level": 7,
+     "module": "Game.Levels.Power.L07mul_pow",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  induction n with t Ht\n  · rw [pow_zero, pow_zero, pow_zero, mul_one]\n    rfl\n  · rw [pow_succ, pow_succ, pow_succ, Ht]\n    -- simp\n    repeat rw [mul_assoc]\n    rw [mul_comm a (_ * b), mul_assoc, mul_comm b a]\n    rfl",
+     "statementDoc": "For all naturals $a$, $b$, $n$, we have $(ab) ^ n = a ^ nb ^ n$.",
+     "statementName": "mul_pow",
+     "statementSig": "(a b n : ℕ) : (a * b) ^ n = a ^ n * b ^ n",
+     "theoremTab": null,
+     "title": "mul_pow",
+     "world": "Power"
+    },
+    {
+     "conclusion": "\nThe music dies down. Is that it?\n\nCourse it isn't, you can\nclearly see that there are two levels left.\n\nA passing mathematician says that mathematicians don't have a name\nfor the structure you just constructed. You feel cheated.\n\nSuddenly the music starts up again. This really is the final boss.\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nOne of the best named levels in the game, a savage `pow_pow`\nsub-boss appears as the music reaches a frenzy. What\nelse could there be to prove about powers after this?\n",
+     "level": 8,
+     "module": "Game.Levels.Power.L08pow_pow",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  induction n with t Ht\n  · rw [mul_zero, pow_zero, pow_zero]\n    rfl\n  · rw [pow_succ, Ht, mul_succ, pow_add]\n    rfl",
+     "statementDoc": "For all naturals $a$, $m$, $n$, we have $(a ^ m) ^ n = a ^ {mn}$.",
+     "statementName": "pow_pow",
+     "statementSig": "(a m n : ℕ) : (a ^ m) ^ n = a ^ (m * n)",
+     "theoremTab": null,
+     "title": "pow_pow",
+     "world": "Power"
+    },
+    {
+     "conclusion": "\nIt's all over! You have proved a theorem which has tripped up\nschoolkids for generations (some of them think $(a+b)^2=a^2+b^2$:\nthis is \"the freshman's dream\").\n\nHow many rewrites did you use? I can do it in 12.\n\nBut wait! This boss is stirring...and mutating into a second more powerful form!\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\n[final boss music]\n",
+     "level": 9,
+     "module": "Game.Levels.Power.L09add_sq",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  rw [pow_two, pow_two, pow_two]\n  rw [add_right_comm]\n  rw [mul_add, add_mul, add_mul]\n  rw [two_mul, add_mul]\n  rw [mul_comm b a]\n  rw [← add_assoc, ← add_assoc]\n  rfl",
+     "statementDoc": "For all numbers $a$ and $b$, we have\n$$(a+b)^2=a^2+b^2+2ab.$$",
+     "statementName": "add_sq",
+     "statementSig": "(a b : ℕ) : (a + b) ^ 2 = a ^ 2 + b ^ 2 + 2 * a * b",
+     "theoremTab": null,
+     "title": "add_sq",
+     "world": "Power"
+    },
+    {
+     "conclusion": "\nCongratulations! You have proved Fermat's Last Theorem!\n\nEither that, or you used magic...\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nWe now have enough to state a mathematically accurate, but slightly\nclunky, version of Fermat's Last Theorem.\n\nFermat's Last Theorem states that if $x,y,z>0$ and $m \\geq 3$ then $x^m+y^m\\not =z^m$.\nIf you didn't do inequality world yet then we can't talk about $m \\geq 3$,\nso we have to resort to the hack of using `n + 3` for `m`,\nwhich guarantees it's big enough. Similarly instead of `x > 0` we\nuse `a + 1`.\n\nThis level looks superficially like other levels we have seen,\nbut the shortest solution known to humans would translate into\nmany millions of lines of Lean code. The author of this game,\nKevin Buzzard, is working on translating the proof by Wiles\nand Taylor into Lean, although this task will take many years.\n\n## CONGRATULATIONS!\n\nYou've finished the main quest of the natural number game!\nIf you would like to learn more about how to use Lean to\nprove theorems in mathematics, then take a look\nat [Mathematics In Lean](https://leanprover-community.github.io/mathematics_in_lean/),\nan interactive textbook which you can read in your browser,\nand which explains how to work with many more mathematical concepts in Lean.\n",
+     "level": 10,
+     "module": "Game.Levels.Power.L10FLT",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  xyzzy",
+     "statementDoc": "For all naturals $a$ $b$ $c$ and $n$, we have\n$$(a+1)^{n+3}+(b+1)^{n+3}\\not=(c+1)^{n+3}.$$",
+     "statementName": null,
+     "statementSig": "(a b c n : ℕ) : (a + 1) ^ (n + 3) + (b + 1) ^ (n + 3) ≠ (c + 1) ^ (n + 3)",
+     "theoremTab": null,
+     "title": "Fermat's Last Theorem",
+     "world": "Power"
+    }
+   ],
+   "title": "Power World"
+  },
+  {
+   "id": "Implication",
+   "introduction": "\nWe've proved that $2+2=4$; in Implication World we'll learn\nhow to prove $2+2\\neq 5$.\n\nIn Addition World we proved *equalities* like $x + y = y + x$.\nIn this second tutorial world we'll learn some new tactics,\nenabling us to prove *implications*\nlike $x+1=4 \\implies x=3.$\n\nWe'll also learn two new fundamental facts about\nnatural numbers, which Peano introduced as axioms.\n\nClick on \"Start\" to proceed.\n",
+   "levels": [
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "The goal in this level is one of our hypotheses. Solve the goal by executing `exact h1`."
+      }
+     ],
+     "introduction": "\nIn this world we'll learn how to prove theorems of the form $P\\implies Q$.\nIn other words, how to prove theorems of the form \"if $P$ is true, then $Q$ is true.\"\nTo do that we need to learn some more tactics.\n\nThe `exact` tactic can be used to close a goal which is exactly one of\nthe hypotheses. It takes the name of the hypothesis as argument: `exact h`.\n",
+     "level": 1,
+     "module": "Game.Levels.Implication.L01exact",
+     "newDefinitions": [],
+     "newTactics": [
+      "exact"
+     ],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"The goal in this level is one of our hypotheses. Solve the goal by executing `exact h1`.\"\n  exact h1",
+     "statementDoc": "Assuming $x+y=37$ and $3x+z=42$, we have $x+y=37$.",
+     "statementName": null,
+     "statementSig": "(x y z : ℕ) (h1 : x + y = 37) (h2 : 3 * x + z = 42) : x + y = 37",
+     "theoremTab": null,
+     "title": "The `exact` tactic",
+     "world": "Implication"
+    },
+    {
+     "conclusion": "Here's a two-line proof:\n```\nrepeat rw [zero_add] at h\nexact h\n```\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "You can use `rw [zero_add] at {h}` to rewrite at `{h}` instead\n  of at the goal."
+      },
+      {
+       "hidden": true,
+       "text": "Do that again!\n\n  `rw [zero_add] at {h}` tries to fill in\n  the arguments to `zero_add` (finding `{x}`) then it replaces all occurrences of\n  `0 + {x}` it finds. Therefor, it did not rewrite `0 + {y}`, yet."
+      },
+      {
+       "hidden": false,
+       "text": "Now you could finish with `rw [{h}]` then `rfl`, but `exact {h}`\n  does it in one line."
+      }
+     ],
+     "introduction": "If the goal is not *exactly* a hypothesis, we can sometimes\nuse rewrites to fix things up.",
+     "level": 2,
+     "module": "Game.Levels.Implication.L02exact2",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"You can use `rw [zero_add] at {h}` to rewrite at `{h}` instead\n  of at the goal.\"\n  rw [zero_add] at h\n  Hint (hidden := true) \"Do that again!\n\n  `rw [zero_add] at {h}` tries to fill in\n  the arguments to `zero_add` (finding `{x}`) then it replaces all occurrences of\n  `0 + {x}` it finds. Therefor, it did not rewrite `0 + {y}`, yet.\"\n  rw [zero_add] at h\n  Hint \"Now you could finish with `rw [{h}]` then `rfl`, but `exact {h}`\n  does it in one line.\"\n  exact h",
+     "statementDoc": "Assuming $0+x=(0+y)+2$, we have $x=y+2$.",
+     "statementName": null,
+     "statementSig": "(x y : ℕ) (h : 0 + x = 0 + y + 2) : x = y + 2",
+     "theoremTab": null,
+     "title": "`exact` practice.",
+     "world": "Implication"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Start with `apply h2 at h1`. This will change `h1` to `y = 42`."
+      },
+      {
+       "hidden": false,
+       "text": "Now finish using the `exact` tactic."
+      }
+     ],
+     "introduction": "\nIn this level, the hypothesis `h2` is an *implication*. It says\nthat *if* `x = 37` *then* `y = 42`. We can use this\nhypothesis with the `apply` tactic. Remember you can click on\n`apply` or any other tactic on the right to see a detailed explanation\nof what it does, with examples.\n",
+     "level": 3,
+     "module": "Game.Levels.Implication.L03apply",
+     "newDefinitions": [],
+     "newTactics": [
+      "apply"
+     ],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Start with `apply h2 at h1`. This will change `h1` to `y = 42`.\"\n  apply h2 at h1\n  Hint \"Now finish using the `exact` tactic.\"\n  exact h1",
+     "statementDoc": "If $x=37$ and we know that $x=37\\implies y=42$ then we can deduce $y=42$.",
+     "statementName": null,
+     "statementSig": "(x y : ℕ) (h1 : x = 37) (h2 : x = 37 → y = 42) : y = 42",
+     "theoremTab": "Peano",
+     "title": "The `apply` tactic.",
+     "world": "Implication"
+    },
+    {
+     "conclusion": "In the next level, we'll do the same proof but backwards.",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Let's first get `h` into the form `succ x = succ 3` so we can\n  apply `succ_inj`. First execute `rw [four_eq_succ_three] at h`\n  to change the 4 on the right hand side."
+      },
+      {
+       "hidden": false,
+       "text": "Now rewrite `succ_eq_add_one` backwards at `h`\n  to get the right hand side."
+      },
+      {
+       "hidden": false,
+       "text": "You can put a `←` in front of any theorem provided to `rw` to rewrite\n  the other way around. Look at the docs for `rw` for an explanation. Type `←` with `\\l`."
+      },
+      {
+       "hidden": true,
+       "text": "Concretely: `rw [← succ_eq_add_one] at h`."
+      },
+      {
+       "hidden": false,
+       "text": "Now let's `apply` our new theorem. Execute `apply succ_inj at h`\n  to change `h` to a proof of `x = 3`."
+      },
+      {
+       "hidden": false,
+       "text": "Now finish in one line."
+      },
+      {
+       "hidden": true,
+       "text": "And now we've deduced what we wanted to prove: the goal is one of our assumptions.\n  Finish the level with `exact h`."
+      }
+     ],
+     "introduction": "\nIf `a` and `b` are numbers, then `succ_inj a b` is a proof\nthat `succ a = succ b` implies `a = b`. Click on this theorem in the *Peano*\ntab for more information.\n\nPeano had this theorem as an axiom, but in Algorithm World\nwe will show how to prove it in Lean. Right now let's just assume it,\nand let's prove $x+1=4 \\implies x=3$ using it. Again, we will proceed\nby manipulating our hypothesis until it becomes the goal. I will\nwalk you through this level.\n",
+     "level": 4,
+     "module": "Game.Levels.Implication.L04succ_inj",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [
+      "MyNat.succ_inj"
+     ],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Let's first get `h` into the form `succ x = succ 3` so we can\n  apply `succ_inj`. First execute `rw [four_eq_succ_three] at h`\n  to change the 4 on the right hand side.\"\n  rw [four_eq_succ_three] at h\n  Hint \"Now rewrite `succ_eq_add_one` backwards at `h`\n  to get the right hand side.\"\n  Hint \"You can put a `←` in front of any theorem provided to `rw` to rewrite\n  the other way around. Look at the docs for `rw` for an explanation. Type `←` with `\\\\l`.\"\n  Hint (hidden := true) \"Concretely: `rw [← succ_eq_add_one] at h`.\"\n  rw [←succ_eq_add_one] at h\n  Hint \"Now let's `apply` our new theorem. Execute `apply succ_inj at h`\n  to change `h` to a proof of `x = 3`.\"\n  apply succ_inj at h\n  Hint \"Now finish in one line.\"\n  Hint (hidden := true) \"And now we've deduced what we wanted to prove: the goal is one of our assumptions.\n  Finish the level with `exact h`.\"\n  exact h",
+     "statementDoc": "If $x+1=4$ then $x=3$.",
+     "statementName": null,
+     "statementSig": "(x : ℕ) (h : x + 1 = 4) : x = 3",
+     "theoremTab": "Peano",
+     "title": "succ_inj : the successor function is injective",
+     "world": "Implication"
+    },
+    {
+     "conclusion": "Many people find `apply t at h` easy, but some find `apply t` confusing.\nIf you find it confusing, then just argue forwards.\n\nYou can read more about the `apply` tactic in its documentation, which you can view by\nclicking on the tactic in the list on the right.",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Start with `apply succ_inj` to apply `succ_inj` to the *goal*."
+      },
+      {
+       "hidden": false,
+       "text": "Applying a proof of $P\\implies Q$ to the *goal* changes $Q$ to $P$.\n  Now try `rw [succ_eq_add_one]` to make the goal more like the hypothesis."
+      },
+      {
+       "hidden": false,
+       "text": "Now rewrite `four_eq_succ_three` backwards to make the goal\n  equal to the hypothesis."
+      },
+      {
+       "hidden": false,
+       "text": "You can now finish with `exact h`."
+      }
+     ],
+     "introduction": "\n  In the last level, we manipulated the hypothesis `x + 1 = 4`\n  until it became the goal `x = 3`. In this level we'll manipulate\n  the goal until it becomes our hypothesis! In other words, we\n  will \"argue backwards\". The `apply` tactic can do this too.\n  Again I will walk you through this one (assuming you're in\n  command line mode).\n",
+     "level": 5,
+     "module": "Game.Levels.Implication.L05succ_inj2",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Start with `apply succ_inj` to apply `succ_inj` to the *goal*.\"\n  apply succ_inj\n  Hint \"Applying a proof of $P\\\\implies Q$ to the *goal* changes $Q$ to $P$.\n  Now try `rw [succ_eq_add_one]` to make the goal more like the hypothesis.\"\n  rw [succ_eq_add_one]\n  Hint \"Now rewrite `four_eq_succ_three` backwards to make the goal\n  equal to the hypothesis.\"\n  rw [← four_eq_succ_three]\n  Hint \"You can now finish with `exact h`.\"\n  exact h",
+     "statementDoc": "If $x+1=4$ then $x=3$.",
+     "statementName": null,
+     "statementSig": "(x : ℕ) (h : x + 1 = 4) : x = 3",
+     "theoremTab": "Peano",
+     "title": "Arguing backwards",
+     "world": "Implication"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Start with `intro h` to assume the hypothesis and call its proof `h`."
+      },
+      {
+       "hidden": true,
+       "text": "Now `exact h` finishes the job."
+      }
+     ],
+     "introduction": "We have seen how to `apply` theorems and assumptions\nof the form `P → Q`. But what if our *goal* is of the form `P → Q`?\nTo prove this goal, we need to know how to say \"let's assume `P` and deduce `Q`\"\nin Lean. We do this with the `intro` tactic.\n",
+     "level": 6,
+     "module": "Game.Levels.Implication.L06intro",
+     "newDefinitions": [],
+     "newTactics": [
+      "intro"
+     ],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Start with `intro h` to assume the hypothesis and call its proof `h`.\"\n  intro h\n  Hint (hidden := true) \"Now `exact h` finishes the job.\"\n  exact h",
+     "statementDoc": "$x=37\\implies x=37$.",
+     "statementName": null,
+     "statementSig": "(x : ℕ) : x = 37 → x = 37",
+     "theoremTab": null,
+     "title": "intro",
+     "world": "Implication"
+    },
+    {
+     "conclusion": "Here's a completely backwards proof:\n```\nintro h\napply succ_inj\nrepeat rw [succ_eq_add_one]\nexact h\n```\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": true,
+       "text": "Start with `intro h` to assume the hypothesis."
+      },
+      {
+       "hidden": true,
+       "text": "Now `repeat rw [← succ_eq_add_one] at h` is the quickest way to\n  change `h` to `succ x = succ y`."
+      },
+      {
+       "hidden": true,
+       "text": "Now `apply succ_inj at h` to cancel the `succ`s."
+      },
+      {
+       "hidden": true,
+       "text": "Now `rw [h]` then `rfl` works, but `exact h` is quicker."
+      }
+     ],
+     "introduction": " Let's see if you can use the tactics we've learnt to prove $x+1=y+1\\implies x=y$.\nTry this one by yourself; if you need help then click on \"Show more help!\".\n",
+     "level": 7,
+     "module": "Game.Levels.Implication.L07intro2",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint (hidden := true) \"Start with `intro h` to assume the hypothesis.\"\n  intro h\n  Hint (hidden := true) \"Now `repeat rw [← succ_eq_add_one] at h` is the quickest way to\n  change `h` to `succ x = succ y`.\"\n  repeat rw [← succ_eq_add_one] at h\n  Hint (hidden := true) \"Now `apply succ_inj at h` to cancel the `succ`s.\"\n  apply succ_inj at h\n  Hint (hidden := true) \"Now `rw [h]` then `rfl` works, but `exact h` is quicker.\"\n  exact h",
+     "statementDoc": "$x+1=y+1 \\implies x=y$.",
+     "statementName": null,
+     "statementSig": "(x y : ℕ) : x + 1 = y + 1 → x = y",
+     "theoremTab": null,
+     "title": "intro practice",
+     "world": "Implication"
+    },
+    {
+     "conclusion": "Remember, `x ≠ y` is *notation* for `x = y → False`.",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Remember that `h2` is a proof of `x = y → False`. Try\n  `apply`ing `h2` either `at h1` or directly to the goal."
+      }
+     ],
+     "introduction": "We still can't prove `2 + 2 ≠ 5` because we have not talked about the\ndefinition of `≠`. In Lean, `a ≠ b` is *notation* for `a = b → False`.\nHere `False` is a generic false proposition, and `→` is Lean's notation\nfor \"implies\". In logic we learn\nthat `True → False` is false, but `False → False` is true. Hence\n`X → False` is the logical opposite of `X`.\n\nEven though `a ≠ b` does not look like an implication,\nyou should treat it as an implication. The next two levels will show you how.\n\n`False` is a goal which you cannot deduce from a consistent set of assumptions!\nSo if your goal is `False` then you had better hope that your hypotheses\nare contradictory, which they are in this level.\n",
+     "level": 8,
+     "module": "Game.Levels.Implication.L08ne",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Remember that `h2` is a proof of `x = y → False`. Try\n  `apply`ing `h2` either `at h1` or directly to the goal.\"\n  apply h2 at h1\n  exact h1",
+     "statementDoc": "If $x=y$ and $x \\neq y$ then we can deduce a contradiction.",
+     "statementName": null,
+     "statementSig": "(x y : ℕ) (h1 : x = y) (h2 : x ≠ y) : False",
+     "theoremTab": "Peano",
+     "title": "≠",
+     "world": "Implication"
+    },
+    {
+     "conclusion": "Nice!",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Start with `intro h`."
+      },
+      {
+       "hidden": false,
+       "text": "Now change `1` to `succ 0` in `h`."
+      },
+      {
+       "hidden": false,
+       "text": "Now you can `apply zero_ne_succ at h`."
+      }
+     ],
+     "introduction": "\nAs warm-up for `2 + 2 ≠ 5` let's prove `0 ≠ 1`. To do this we need to\nintroduce Peano's last axiom `zero_ne_succ n`, a proof that `0 ≠ succ n`.\nTo learn about this result, click on it in the list of lemmas on the right.\n",
+     "level": 9,
+     "module": "Game.Levels.Implication.L09zero_ne_succ",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [
+      "MyNat.zero_ne_succ"
+     ],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Start with `intro h`.\"\n  intro h\n  Hint \"Now change `1` to `succ 0` in `h`.\"\n  rw [one_eq_succ_zero] at h  -- **TODO** this line is not needed :-/\n  Hint \"Now you can `apply zero_ne_succ at h`.\"\n  apply zero_ne_succ at h -- **TODO** cripple `apply`.\n  exact h",
+     "statementDoc": "$0\\neq1$.",
+     "statementName": "zero_ne_one",
+     "statementSig": ": (0 : ℕ) ≠ 1",
+     "theoremTab": "Peano",
+     "title": "zero_ne_succ",
+     "world": "Implication"
+    },
+    {
+     "conclusion": "What do you think of this two-liner:\n```\nsymm\nexact zero_ne_one\n```\n\n`exact` doesn't just take hypotheses, it will eat any proof which exists\nin the system.\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nWe know `zero_ne_succ n` is a proof of `0 = succ n → False` -- but what\nif we have a hypothesis `succ n = 0`? It's the wrong way around!\n\nThe `symm` tactic changes a goal `x = y` to `y = x`, and a goal `x ≠ y`\nto `y ≠ x`. And `symm at h`\ndoes the same for a hypothesis `h`. We've proved $0 \\neq 1$ and called\nthe proof `zero_ne_one`; now try proving $1 \\neq 0$.\n",
+     "level": 10,
+     "module": "Game.Levels.Implication.L10one_ne_zero",
+     "newDefinitions": [],
+     "newTactics": [
+      "symm"
+     ],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  symm\n  exact zero_ne_one",
+     "statementDoc": "$1\\neq0$.",
+     "statementName": "one_ne_zero",
+     "statementSig": ": (1 : ℕ) ≠ 0",
+     "theoremTab": "012",
+     "title": "1 ≠ 0",
+     "world": "Implication"
+    },
+    {
+     "conclusion": "Here's my proof:\n```\nintro h\nrw [add_succ, add_succ, add_zero] at h\nrepeat apply succ_inj at h\napply zero_ne_succ at h\nexact h\n```\n\nEven though Lean is a theorem prover, right now it's pretty clear that we have not\ndeveloped enough material to make it an adequate calculator. In Algorithm\nWorld, a more computer-sciency world, we will develop machinery which makes\nquestions like this much easier, and goals like $20 + 20 ≠ 41$ feasible.\nAlternatively you can do more mathematics in Advanced Addition World, where we prove\nthe lemmas needed to get a working theory of inequalities. Click \"Home\" and\ndecide your route.",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": " 2 + 2 ≠ 5 is boring to prove in full, given only the tools we have currently.\nTo make it a bit less painful, I have unfolded all of the numerals for you.\nSee if you can use `zero_ne_succ` and `succ_inj` to prove this.\n",
+     "level": 11,
+     "module": "Game.Levels.Implication.L11two_add_two_ne_five",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  intro h\n  rw [add_succ, add_succ, add_zero] at h\n  repeat apply succ_inj at h\n  apply zero_ne_succ at h\n  exact h",
+     "statementDoc": "$2+2≠5$.",
+     "statementName": null,
+     "statementSig": ": succ (succ 0) + succ (succ 0) ≠ succ (succ (succ (succ (succ 0))))",
+     "theoremTab": "Peano",
+     "title": "2 + 2 ≠ 5",
+     "world": "Implication"
+    }
+   ],
+   "title": "Implication World"
+  },
+  {
+   "id": "AdvAddition",
+   "introduction": "\nIn Advanced Addition World we will prove some basic\naddition facts such as $x+y=x\\implies y=0$. The theorems\nproved in this world will be used to build\na theory of inequalities in `≤` World.\n\nClick on \"Start\" to proceed.\n",
+   "levels": [
+    {
+     "conclusion": "Nice!",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": true,
+       "text": "Start with induction on `n`."
+      }
+     ],
+     "introduction": "In this world I will mostly leave you on your own.\n\n`add_right_cancel a b n` is the theorem that $a+n=b+n\\implies a=b$.\n",
+     "level": 1,
+     "module": "Game.Levels.AdvAddition.L01add_right_cancel",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint (hidden := true) \"Start with induction on `n`.\"\n  induction n with d hd\n  intro h\n  repeat rw [add_zero] at h\n  exact h\n  intro h\n  repeat rw [add_succ] at h\n  apply succ_inj at h\n  apply hd at h\n  exact h",
+     "statementDoc": "$a+n=b+n\\implies a=b$.",
+     "statementName": "add_right_cancel",
+     "statementSig": "(a b n : ℕ) : a + n = b + n → a = b",
+     "theoremTab": "+",
+     "title": "add_right_cancel",
+     "world": "AdvAddition"
+    },
+    {
+     "conclusion": "How about this for a proof:\n```\nrepeat rw [add_comm n]\nexact add_right_cancel a b n\n```\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "`add_left_cancel a b n` is the theorem that $n+a=n+b\\implies a=b$.\nYou can prove it by induction on `n` or you can deduce it from `add_right_cancel`.\n",
+     "level": 2,
+     "module": "Game.Levels.AdvAddition.L02add_left_cancel",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  repeat rw [add_comm n]\n  intro h\n  apply add_right_cancel at h\n  exact h",
+     "statementDoc": "$n+a=n+b\\implies a=b$.",
+     "statementName": "add_left_cancel",
+     "statementSig": "(a b n : ℕ) : n + a = n + b → a = b",
+     "theoremTab": "+",
+     "title": "add_left_cancel",
+     "world": "AdvAddition"
+    },
+    {
+     "conclusion": "Did you use induction on `y`?\nHere's a two-line proof of `add_left_eq_self` which uses `add_right_cancel`.\nIf you want to inspect it, you can go into editor mode by clicking `</>` in the top right\nand then just cut and paste the proof and move your cursor around it\nto see the hypotheses and goal at any given point\n(although you'll lose your own proof this way). Click `>_` to get\nback to command line mode.\n```\nnth_rewrite 2 [← zero_add y]\nexact add_right_cancel x 0 y\n```\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\n`add_left_eq_self x y` is the theorem that $x + y = y\\implies x=0.$\n",
+     "level": 3,
+     "module": "Game.Levels.AdvAddition.L03add_left_eq_self",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  intro h\n  nth_rewrite 2 [← zero_add y] at h\n  apply add_right_cancel at h\n  exact h",
+     "statementDoc": "$x + y = y\\implies x=0.$",
+     "statementName": "add_left_eq_self",
+     "statementSig": "(x y : ℕ) : x + y = y → x = 0",
+     "theoremTab": "+",
+     "title": "add_left_eq_self",
+     "world": "AdvAddition"
+    },
+    {
+     "conclusion": "Here's a proof using `add_left_eq_self`:\n```\nrw [add_comm]\nintro h\napply add_left_eq_self at h\nexact h\n```\n\nand here's an even shorter one using the same idea:\n```\nrw [add_comm]\nexact add_left_eq_self y x\n```\n\nAlternatively you can just prove it by induction on `x`:\n\n```\ninduction x with d hd\nintro h\nrw [zero_add] at h\nexact h\nintro h\nrw [succ_add] at h\napply succ_inj at h\napply hd at h\nexact h\n```\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "This state is not provable! Did you maybe use `rw [add_left_eq_self] at h`\n    instead of `apply [add_left_eq_self] at h`? You can complare the two in the inventory."
+      },
+      {
+       "hidden": false,
+       "text": "This state is not provable! Did you maybe use `rw [add_left_eq_self] at h`\n    instead of `apply [add_left_eq_self] at h`? You can complare the two in the inventory."
+      }
+     ],
+     "introduction": "`add_right_eq_self x y` is the theorem that $x + y = x\\implies y=0.$\nTwo ways to do it spring to mind; I'll mention them when you've solved it.\n",
+     "level": 4,
+     "module": "Game.Levels.AdvAddition.L04add_right_eq_self",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Branch\n    intro h\n    rw [add_comm] at h\n    rw [add_left_eq_self x y] at h\n    · rw [add_zero] at h\n      exact h\n    Hint \"This state is not provable! Did you maybe use `rw [add_left_eq_self] at h`\n    instead of `apply [add_left_eq_self] at h`? You can complare the two in the inventory.\"\n    -- not ideal to have the hint duplicated, but it's not obvious if they'd use `add_comm`\n    -- or not\n    rw [add_comm] at h\n    Hint \"This state is not provable! Did you maybe use `rw [add_left_eq_self] at h`\n    instead of `apply [add_left_eq_self] at h`? You can complare the two in the inventory.\"\n  rw [add_comm]\n  exact add_left_eq_self y x",
+     "statementDoc": "$x+y=x\\implies y=0$.",
+     "statementName": "add_right_eq_self",
+     "statementSig": "(x y : ℕ) : x + y = x → y = 0",
+     "theoremTab": "+",
+     "title": "add_right_eq_self",
+     "world": "AdvAddition"
+    },
+    {
+     "conclusion": "Well done!",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Here we want to deal with the cases `b = 0` and `b ≠ 0` separately,\n  so start with `cases b with d`."
+      }
+     ],
+     "introduction": "The next result we'll need in `≤` World is that if `a + b = 0` then `a = 0` and `b = 0`.\nLet's prove one of these facts in this level, and the other in the next.\n\n## A new tactic: `cases`\n\nThe `cases` tactic will split an object or hypothesis up into the possible ways\nthat it could have been created.\n\nFor example, sometimes you want to deal with the two cases `b = 0` and `b = succ d` separately,\nbut don't need the inductive hypothesis `hd` that comes with `induction b with d hd`.\nIn this situation you can use `cases b with d` instead. There are two ways to make\na number: it's either zero or a successor. So you will end up with two goals, one\nwith `b = 0` and one with `b = succ d`.\n\nAnother example: if you have a hypothesis `h : False` then you are done, because a false statement implies\nany statement. Here `cases h` will close the goal, because there are *no* ways to\nmake a proof of `False`! So you will end up with no goals, meaning you have proved everything.\n\n",
+     "level": 5,
+     "module": "Game.Levels.AdvAddition.L05add_right_eq_zero",
+     "newDefinitions": [],
+     "newTactics": [
+      "cases"
+     ],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Here we want to deal with the cases `b = 0` and `b ≠ 0` separately,\n  so start with `cases b with d`.\"\n  cases b with d\n  intro h\n  rw [add_zero] at h\n  exact h\n  intro h\n  rw [add_succ] at h\n  symm at h\n  apply zero_ne_succ at h\n  cases h",
+     "statementDoc": "If $a+b=0$ then $a=0$.",
+     "statementName": "add_right_eq_zero",
+     "statementSig": "(a b : ℕ) : a + b = 0 → a = 0",
+     "theoremTab": "Peano",
+     "title": "add_right_eq_zero",
+     "world": "AdvAddition"
+    },
+    {
+     "conclusion": "How about this for a proof:\n\n```\nrw [add_comm]\nexact add_right_eq_zero b a\n```\n\nThat's the end of Advanced Addition World! You'll need these theorems\nfor the next world, `≤` World. Click on \"Home\" to access it.\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "You can just mimic the previous proof to do this one -- or you can figure out a way\nof using it.\n",
+     "level": 6,
+     "module": "Game.Levels.AdvAddition.L06add_left_eq_zero",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  rw [add_comm]\n  exact add_right_eq_zero b a",
+     "statementDoc": "If $a+b=0$ then $b=0$.",
+     "statementName": "add_left_eq_zero",
+     "statementSig": "(a b : ℕ) : a + b = 0 → b = 0",
+     "theoremTab": "+",
+     "title": "add_left_eq_zero",
+     "world": "AdvAddition"
+    }
+   ],
+   "title": "Advanced Addition World"
+  },
+  {
+   "id": "LessOrEqual",
+   "introduction": "\nIn this world we define `a ≤ b` and prove standard facts\nabout it, such as \"if `a ≤ b` and `b ≤ c` then `a ≤ c`.\"\n\nThe definition of `a ≤ b` is \"there exists a number `c`\nsuch that `b = a + c`. \" So we're going to have to learn\na tactic to prove \"exists\" theorems, and another one\nto use \"exists\" hypotheses.\n\nClick on \"Start\" to proceed.\n",
+   "levels": [
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "The reason `{x} ≤ {x}` is because `{x} = {x} + 0`.\n  So you should start this proof with `use 0`."
+      },
+      {
+       "hidden": false,
+       "text": "You can probably take it from here."
+      }
+     ],
+     "introduction": "\n`a ≤ b` is *notation* for `∃ c, b = a + c`. This \"backwards E\"\nmeans \"there exists\". So `a ≤ b` means that there exists\na number `c` such that `b = a + c`. This definition works\nbecause there are no negative numbers in this game.\n\nTo *prove* an \"exists\" statement, use the `use` tactic.\nLet's see an example.\n",
+     "level": 1,
+     "module": "Game.Levels.LessOrEqual.L01le_refl",
+     "newDefinitions": [
+      "LE"
+     ],
+     "newTactics": [
+      "use"
+     ],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"The reason `{x} ≤ {x}` is because `{x} = {x} + 0`.\n  So you should start this proof with `use 0`.\"\n  use 0\n  Hint \"You can probably take it from here.\"\n  rw [add_zero]\n  rfl",
+     "statementDoc": "If $x$ is a number, then $x \\le x$.",
+     "statementName": "le_refl",
+     "statementSig": "(x : ℕ) : x ≤ x",
+     "theoremTab": null,
+     "title": "The `use` tactic",
+     "world": "LessOrEqual"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nTo solve this level, you need to `use` a number `c` such that `x = 0 + c`.\n",
+     "level": 2,
+     "module": "Game.Levels.LessOrEqual.L02zero_le",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  use x\n  rw [zero_add]\n  rfl",
+     "statementDoc": "If $x$ is a number, then $0 \\le x$.",
+     "statementName": "zero_le",
+     "statementSig": "(x : ℕ) : 0 ≤ x",
+     "theoremTab": null,
+     "title": "0 ≤ x",
+     "world": "LessOrEqual"
+    },
+    {
+     "conclusion": "\nHere's a two-liner:\n```\nuse 1\nexact succ_eq_add_one x\n```\n\nThis works because `succ_eq_add_one x` is a proof of `succ x = x + 1`.\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "If you `use` the wrong number, you get stuck with a goal you can't prove.\nWhat number will you `use` here?",
+     "level": 3,
+     "module": "Game.Levels.LessOrEqual.L03le_succ_self",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  use 1\n  rw [succ_eq_add_one]\n  rfl",
+     "statementDoc": "If $x$ is a number, then $x \\le \\operatorname{succ}(x)$.",
+     "statementName": "le_succ_self",
+     "statementSig": "(x : ℕ) : x ≤ succ x",
+     "theoremTab": null,
+     "title": "x ≤ succ x",
+     "world": "LessOrEqual"
+    },
+    {
+     "conclusion": "\nA passing mathematician remarks that with reflexivity and transitivity out of the way,\nyou have proved that `≤` is a *preorder* on `ℕ`.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Start with `cases {hxy} with a ha`."
+      },
+      {
+       "hidden": false,
+       "text": "Now `{ha}` is a proof that `{y} = {x} + {a}`, and `hxy` has vanished. Similarly, you can destruct\n  `{hyz}` into its parts with `cases {hyz} with b hb`."
+      },
+      {
+       "hidden": false,
+       "text": "Now you need to figure out which number to `use`. See if you can take it from here."
+      }
+     ],
+     "introduction": "\nIn this level, we see inequalities as *hypotheses*. We have not seen this before.\nThe `cases` tactic can be used to take `hxy` apart.\n",
+     "level": 4,
+     "module": "Game.Levels.LessOrEqual.L04le_trans",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Start with `cases {hxy} with a ha`.\"\n  cases hxy with a ha\n  Hint \"Now `{ha}` is a proof that `{y} = {x} + {a}`, and `hxy` has vanished. Similarly, you can destruct\n  `{hyz}` into its parts with `cases {hyz} with b hb`.\"\n  cases hyz with b hb\n  Hint \"Now you need to figure out which number to `use`. See if you can take it from here.\"\n  use a + b\n  rw [hb, ha]\n  exact add_assoc x a b",
+     "statementDoc": "If $x \\leq y$ and $y \\leq z$, then $x \\leq z$.",
+     "statementName": "le_trans",
+     "statementSig": "(x y z : ℕ) (hxy : x ≤ y) (hyz : y ≤ z) : x ≤ z",
+     "theoremTab": "≤",
+     "title": "x ≤ y and y ≤ z implies x ≤ z",
+     "world": "LessOrEqual"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": true,
+       "text": "You want to use `add_right_eq_zero`, which you already\n  proved, but you'll have to start with `symm at` your hypothesis."
+      }
+     ],
+     "introduction": "\nIt's \"intuitively obvious\" that there are no numbers less than zero,\nbut to prove it you will need a result which you showed in advanced\naddition world.\n",
+     "level": 5,
+     "module": "Game.Levels.LessOrEqual.L05le_zero",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  cases hx with y hy\n  Hint (hidden := true) \"You want to use `add_right_eq_zero`, which you already\n  proved, but you'll have to start with `symm at` your hypothesis.\"\n  symm at hy\n  apply add_right_eq_zero at hy\n  exact hy",
+     "statementDoc": "If $x \\leq 0$, then $x=0$.",
+     "statementName": "le_zero",
+     "statementSig": "(x : ℕ) (hx : x ≤ 0) : x = 0",
+     "theoremTab": "+",
+     "title": "x ≤ 0 → x = 0",
+     "world": "LessOrEqual"
+    },
+    {
+     "conclusion": "\nHere's my proof:\n```\ncases hxy with a ha\ncases hyx with b hb\nrw [ha]\nrw [ha, add_assoc] at hb\nsymm at hb\napply add_right_eq_self at hb\napply add_right_eq_zero at hb\nrw [hb, add_zero]\nrfl\n```\n\nA passing mathematician remarks that with antisymmetry as well,\nyou have proved that `≤` is a *partial order* on `ℕ`.\n\nThe boss level of this world is to prove\nthat `≤` is a total order. Let's learn two more easy tactics\nfirst.\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nThis level asks you to prove *antisymmetry* of $\\leq$.\nIn other words, if $x \\leq y$ and $y \\leq x$ then $x = y$.\nIt's the trickiest one so far. Good luck!\n",
+     "level": 6,
+     "module": "Game.Levels.LessOrEqual.L06le_antisymm",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  cases hxy with a ha\n  cases hyx with b hb\n  rw [ha]\n  rw [ha, add_assoc] at hb\n  symm at hb\n  apply add_right_eq_self at hb\n  apply add_right_eq_zero at hb\n  rw [hb, add_zero]\n  rfl",
+     "statementDoc": "If $x \\leq y$ and $y \\leq x$, then $x = y$.",
+     "statementName": "le_antisymm",
+     "statementSig": "(x y : ℕ) (hxy : x ≤ y) (hyx : y ≤ x) : x = y",
+     "theoremTab": null,
+     "title": "x ≤ y and y ≤ x implies x = y",
+     "world": "LessOrEqual"
+    },
+    {
+     "conclusion": "\nReady for the boss level of this world?\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "We don't know whether to go left or right yet. So start with `cases {h} with hx hy`."
+      },
+      {
+       "hidden": false,
+       "text": "Now we can prove the `or` statement by proving the statement on the right,\n  so use the `right` tactic."
+      },
+      {
+       "hidden": true,
+       "text": "This time, use the `left` tactic."
+      }
+     ],
+     "introduction": "\nTotality of `≤` is the boss level of this world, and it's coming up next. It says that\nif `a` and `b` are naturals then either `a ≤ b` or `b ≤ a`.\nBut we haven't talked about `or` at all. Here's a run-through.\n\n1) The notation for \"or\" is `∨`. You won't need to type it, but you can\ntype it with `\\or`.\n\n2) If you have an \"or\" statement in the *goal*, then two tactics make\nprogress: `left` and `right`. But don't choose a direction unless your\nhypotheses guarantee that it's the correct one.\n\n3) If you have an \"or\" statement as a *hypothesis* `h`, then\n`cases h with h1 h2` will create two goals, one where you went left,\nand the other where you went right.\n",
+     "level": 7,
+     "module": "Game.Levels.LessOrEqual.L07or_symm",
+     "newDefinitions": [],
+     "newTactics": [
+      "left",
+      "right"
+     ],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"We don't know whether to go left or right yet. So start with `cases {h} with hx hy`.\"\n  cases h with hx hy\n  Hint \"Now we can prove the `or` statement by proving the statement on the right,\n  so use the `right` tactic.\"\n  right\n  exact hx\n  Hint (hidden := true) \"This time, use the `left` tactic.\"\n  left\n  exact hy",
+     "statementDoc": "If $x=37$ or $y=42$, then $y=42$ or $x=37$.",
+     "statementName": null,
+     "statementSig": "(x y : ℕ) (h : x = 37 ∨ y = 42) : y = 42 ∨ x = 37",
+     "theoremTab": "≤",
+     "title": "Dealing with `or`",
+     "world": "LessOrEqual"
+    },
+    {
+     "conclusion": "\nVery well done.\n\nA passing mathematician remarks that with you've just proved that `ℕ` is totally\nordered.\n\nThe final few levels in this world are much easier.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": true,
+       "text": "Start with `induction {y} with d hd`."
+      },
+      {
+       "hidden": true,
+       "text": "Try `cases {hd} with h1 h2`."
+      },
+      {
+       "hidden": true,
+       "text": "Now `cases {h2} with e he`."
+      },
+      {
+       "hidden": true,
+       "text": "You still don't know which way to go, so do `cases {e} with a`."
+      }
+     ],
+     "introduction": "\nThis is I think the toughest level yet. Tips: if `a` is a number\nthen `cases a with b` will split into cases `a = 0` and `a = succ b`.\nAnd don't go left or right until your hypotheses guarantee that\nyou can prove the resulting goal!\n\nI've left hidden hints; if you need them, retry from the beginning\nand click on \"Show more help!\"\n",
+     "level": 8,
+     "module": "Game.Levels.LessOrEqual.L08le_total",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint (hidden := true) \"Start with `induction {y} with d hd`.\"\n  induction y with d hd\n  right\n  exact zero_le x\n  Hint (hidden := true) \"Try `cases {hd} with h1 h2`.\"\n  cases hd with h1 h2\n  left\n  cases h1 with e h1\n  rw [h1]\n  use e + 1\n  rw [succ_eq_add_one, add_assoc]\n  rfl\n  Hint (hidden := true) \"Now `cases {h2} with e he`.\"\n  cases h2 with e he\n  Hint (hidden := true) \"You still don't know which way to go, so do `cases {e} with a`.\"\n  cases e with a\n  rw [he]\n  left\n  rw [add_zero]\n  use 1\n  exact succ_eq_add_one d\n  right\n  use a\n  rw [add_succ] at he\n  rw [succ_add]\n  exact he",
+     "statementDoc": "If $x$ and $y$ are numbers, then either $x \\leq y$ or $y \\leq x$.",
+     "statementName": "le_total",
+     "statementSig": "(x y : ℕ) : x ≤ y ∨ y ≤ x",
+     "theoremTab": null,
+     "title": "x ≤ y or y ≤ x",
+     "world": "LessOrEqual"
+    },
+    {
+     "conclusion": "\nHere's my proof:\n```\ncases hx with d hd\nuse d\nrw [succ_add] at hd\napply succ_inj at hd\nexact hd\n```\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nWe've proved that `x ≤ 0` implies `x = 0`. The last two levels\nin this world will prove which numbers are `≤ 1` and `≤ 2`.\nThis lemma will be helpful for them.\n",
+     "level": 9,
+     "module": "Game.Levels.LessOrEqual.L09succ_le_succ",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  cases hx with d hd\n  use d\n  rw [succ_add] at hd\n  apply succ_inj at hd\n  exact hd",
+     "statementDoc": "If $\\operatorname{succ}(x) \\leq \\operatorname{succ}(y)$ then $x \\leq y$.",
+     "statementName": "succ_le_succ",
+     "statementSig": "(x y : ℕ) (hx : succ x ≤ succ y) : x ≤ y",
+     "theoremTab": "≤",
+     "title": "succ x ≤ succ y → x ≤ y",
+     "world": "LessOrEqual"
+    },
+    {
+     "conclusion": "\nHere's my proof:\n```\ncases x with y\nleft\nrfl\nrw [one_eq_succ_zero] at hx ⊢\napply succ_le_succ at hx\napply le_zero at hx\nrw [hx]\nright\nrfl\n```\n\nIf you solved this level then you should be fine with the next level!\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nWe've seen `le_zero`, the proof that if `x ≤ 0` then `x = 0`.\nNow we'll prove that if `x ≤ 1` then `x = 0` or `x = 1`.\n",
+     "level": 10,
+     "module": "Game.Levels.LessOrEqual.L10le_one",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  cases x with y\n  left\n  rfl\n  rw [one_eq_succ_zero] at hx ⊢\n  apply succ_le_succ at hx\n  apply le_zero at hx\n  rw [hx]\n  right\n  rfl",
+     "statementDoc": "If $x \\leq 1$ then either $x = 0$ or $x = 1$.",
+     "statementName": "le_one",
+     "statementSig": "(x : ℕ) (hx : x ≤ 1) : x = 0 ∨ x = 1",
+     "theoremTab": "≤",
+     "title": "x ≤ 1",
+     "world": "LessOrEqual"
+    },
+    {
+     "conclusion": "\nNice!\n\nThe next step in the development of order theory is to develop\nthe theory of the interplay between `≤` and multiplication.\nIf you've already done Multiplication World, you're now ready for\nAdvanced Multiplication World. Click on \"Home\" to access it.\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nWe'll need this lemma to prove that two is prime!\n\nYou'll need to know that `∨` is right associative. This means that\n`x = 0 ∨ x = 1 ∨ x = 2` actually means `x = 0 ∨ (x = 1 ∨ x = 2)`.\nThis affects how `left` and `right` work.\n",
+     "level": 11,
+     "module": "Game.Levels.LessOrEqual.L11le_two",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  cases x with y\n  left\n  rfl\n  cases y with z\n  right\n  left\n  rw [one_eq_succ_zero]\n  rfl\n  rw [two_eq_succ_one, one_eq_succ_zero] at hx ⊢\n  apply succ_le_succ at hx\n  apply succ_le_succ at hx\n  apply le_zero at hx\n  rw [hx]\n  right\n  right\n  rfl",
+     "statementDoc": "If $x \\leq 2$ then $x = 0$ or $1$ or $2$.",
+     "statementName": "le_two",
+     "statementSig": "(x : ℕ) (hx : x ≤ 2) : x = 0 ∨ x = 1 ∨ x = 2",
+     "theoremTab": "012",
+     "title": "le_two",
+     "world": "LessOrEqual"
+    }
+   ],
+   "title": "≤ World"
+  },
+  {
+   "id": "AdvMultiplication",
+   "introduction": "\nAdvanced *Addition* World proved various implications\ninvolving addition, such as `x + y = 0 → x = 0` and `x + y = x → y = 0`.\nThese lemmas were used to prove basic facts about ≤ in ≤ World.\n\nIn Advanced Multiplication World we prove analogous\nfacts about multiplication, such as `x * y = 1 → x = 1`, and\n`x * y = x → y = 1` (assuming `x ≠ 0` in the latter result). This will prepare\nus for Divisibility World.\n\nMultiplication World is more complex than Addition World. In the same\nway, Advanced Multiplication world is more complex than Advanced Addition\nWorld. One reason for this is that certain intermediate results are only\ntrue under the additional hypothesis that one of the variables is non-zero.\nThis causes some unexpected extra twists.\n",
+   "levels": [
+    {
+     "conclusion": "My proof:\n```\ncases h with d hd\nuse d * t\nrw [hd, add_mul]\nrfl\n```\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "Let's warm up with an easy one, which works even if `t = 0`.",
+     "level": 1,
+     "module": "Game.Levels.AdvMultiplication.L01mul_le_mul_right",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  cases h with d hd\n  use d * t\n  rw [hd, add_mul]\n  rfl",
+     "statementDoc": "",
+     "statementName": "mul_le_mul_right",
+     "statementSig": "(a b t : ℕ) (h : a ≤ b) : a * t ≤ b * t",
+     "theoremTab": "*",
+     "title": "mul_le_mul_right",
+     "world": "AdvMultiplication"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "We want to reduce this to a hypothesis `b = 0` and a goal `a * b = 0`,\n  which is logically equivalent but much easier to prove. Remember that `X ≠ 0`\n  is notation for `X = 0 → False`. Click on `Show more help!` if you need hints."
+      },
+      {
+       "hidden": true,
+       "text": "Start with `intro hb`."
+      },
+      {
+       "hidden": true,
+       "text": "Now `apply h` and you can probably take it from here."
+      }
+     ],
+     "introduction": "If you have completed Algorithm World then you can use the `contrapose!` tactic\nhere. If not then I'll talk you through a manual approach.",
+     "level": 2,
+     "module": "Game.Levels.AdvMultiplication.L02mul_left_ne_zero",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"We want to reduce this to a hypothesis `b = 0` and a goal `a * b = 0`,\n  which is logically equivalent but much easier to prove. Remember that `X ≠ 0`\n  is notation for `X = 0 → False`. Click on `Show more help!` if you need hints.\"\n  Hint (hidden := true) \"Start with `intro hb`.\"\n  intro hb\n  Hint (hidden := true) \"Now `apply h` and you can probably take it from here.\"\n  apply h\n  rw [hb, mul_zero]\n  rfl",
+     "statementDoc": "",
+     "statementName": "mul_left_ne_zero",
+     "statementSig": "(a b : ℕ) (h : a * b ≠ 0) : b ≠ 0",
+     "theoremTab": "*",
+     "title": "mul_left_ne_zero",
+     "world": "AdvMultiplication"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Start with `cases a with d` to do a case split on `a = 0` and `a = succ d`."
+      }
+     ],
+     "introduction": "Multiplication usually makes a number bigger, but multiplication by zero can make\nit smaller. Thus many lemmas about inequalities and multiplication need the\nhypothesis `a ≠ 0`. Here is a key lemma that enables us to use this hypothesis.\nTo help us with the proof, we can use the `tauto` tactic. Click on the tactic's name\non the right to see what it does.\n",
+     "level": 3,
+     "module": "Game.Levels.AdvMultiplication.L03eq_succ_of_ne_zero",
+     "newDefinitions": [],
+     "newTactics": [
+      "tauto"
+     ],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Start with `cases a with d` to do a case split on `a = 0` and `a = succ d`.\"\n  cases a with d\n  · Hint \"In the \\\"base case\\\" we have a hypothesis `ha : 0 ≠ 0`, and you can deduce anything\n  from a false statement. The `tauto` tactic will close this goal.\"\n    tauto\n  · use d\n    rfl",
+     "statementDoc": "",
+     "statementName": "eq_succ_of_ne_zero",
+     "statementSig": "(a : ℕ) (ha : a ≠ 0) : ∃ n, a = succ n",
+     "theoremTab": "≤",
+     "title": "eq_succ_of_ne_zero",
+     "world": "AdvMultiplication"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": true,
+       "text": "Use the previous lemma with `apply eq_succ_of_ne_zero at ha`."
+      },
+      {
+       "hidden": true,
+       "text": "Now take apart the existence statement with `cases ha with n hn`."
+      }
+     ],
+     "introduction": "The previous lemma can be used to prove this one.\n",
+     "level": 4,
+     "module": "Game.Levels.AdvMultiplication.L04one_le_of_ne_zero",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint (hidden := true) \"Use the previous lemma with `apply eq_succ_of_ne_zero at ha`.\"\n  apply eq_succ_of_ne_zero at ha\n  Hint (hidden := true) \"Now take apart the existence statement with `cases ha with n hn`.\"\n  cases ha with n hn\n  use n\n  rw [hn, succ_eq_add_one, add_comm]\n  rfl",
+     "statementDoc": "",
+     "statementName": "one_le_of_ne_zero",
+     "statementSig": "(a : ℕ) (ha : a ≠ 0) : 1 ≤ a",
+     "theoremTab": "≤",
+     "title": "one_le_of_ne_zero",
+     "world": "AdvMultiplication"
+    },
+    {
+     "conclusion": "Here's what I was thinking of:\n```\napply mul_left_ne_zero at h\napply one_le_of_ne_zero at h\napply mul_le_mul_right 1 b a at h\nrw [one_mul, mul_comm] at h\nexact h\n```\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nOne day this game will have a Prime Number World, with a final boss\nof proving that $2$ is prime.\nTo do this, we will have to rule out things like $2 = 37 × 42.$\nWe will do this by proving that any factor of $2$ is at most $2$,\nwhich we will do using this lemma. The proof I have in mind manipulates the hypothesis\nuntil it becomes the goal, using `mul_left_ne_zero`, `one_le_of_ne_zero` and\n`mul_le_mul_right`.\n",
+     "level": 5,
+     "module": "Game.Levels.AdvMultiplication.L05le_mul_right",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  apply mul_left_ne_zero at h\n  apply one_le_of_ne_zero at h\n  apply mul_le_mul_right 1 b a at h\n  rw [one_mul, mul_comm] at h\n  exact h",
+     "statementDoc": "",
+     "statementName": "le_mul_right",
+     "statementSig": "(a b : ℕ) (h : a * b ≠ 0) : a ≤ a * b",
+     "theoremTab": "≤",
+     "title": "le_mul_right",
+     "world": "AdvMultiplication"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "We want to use `le_mul_right`, but we need a hypothesis `x * y ≠ 0`\n  which we don't have. Yet. Execute `have h2 : x * y ≠ 0` (you can type `≠` with `\\ne`).\n  You'll be asked to\n  prove it, and then you'll have a new hypothesis which you can apply\n  `le_mul_right` to."
+      },
+      {
+       "hidden": true,
+       "text": "Now you can `apply le_mul_right at h2`."
+      },
+      {
+       "hidden": true,
+       "text": "Now `rw [{h}] at {h2}` so you can `apply le_one at {h2}`."
+      },
+      {
+       "hidden": true,
+       "text": "Now `cases h2 with h0 h1` and deal with the two\n  cases separately."
+      },
+      {
+       "hidden": true,
+       "text": "`tauto` is good enough to solve this goal."
+      }
+     ],
+     "introduction": "\nThis level proves `x * y = 1 → x = 1`, the multiplicative analogue of Advanced Addition\nWorld's `x + y = 0 → x = 0`. The strategy is to prove that `x ≤ 1` and then use the\nlemma `le_one` from `≤` world.\n\nWe'll prove it using a new and very useful tactic called `have`.\n",
+     "level": 6,
+     "module": "Game.Levels.AdvMultiplication.L06mul_right_eq_one",
+     "newDefinitions": [],
+     "newTactics": [
+      "have"
+     ],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint (strict := true) \"We want to use `le_mul_right`, but we need a hypothesis `x * y ≠ 0`\n  which we don't have. Yet. Execute `have h2 : x * y ≠ 0` (you can type `≠` with `\\\\ne`).\n  You'll be asked to\n  prove it, and then you'll have a new hypothesis which you can apply\n  `le_mul_right` to.\"\n  have h2 : x * y ≠ 0\n  rw [h]\n  exact one_ne_zero\n  Hint (hidden := true) \"Now you can `apply le_mul_right at h2`.\"\n  apply le_mul_right at h2\n  Hint (hidden := true) \"Now `rw [{h}] at {h2}` so you can `apply le_one at {h2}`.\"\n  rw [h] at h2\n  apply le_one at h2\n  Hint (hidden := true) \"Now `cases h2 with h0 h1` and deal with the two\n  cases separately.\"\n  cases h2 with h0 h1\n  · rw [h0, zero_mul] at h\n    Hint (hidden := true) \"`tauto` is good enough to solve this goal.\"\n    tauto\n  · exact h1",
+     "statementDoc": "",
+     "statementName": "mul_right_eq_one",
+     "statementSig": "(x y : ℕ) (h : x * y = 1) : x = 1",
+     "theoremTab": "*",
+     "title": "mul_right_eq_one",
+     "world": "AdvMultiplication"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": true,
+       "text": "Start with `apply eq_succ_of_ne_zero at ha` and `... at hb`"
+      }
+     ],
+     "introduction": "\nThis level proves that if `a ≠ 0` and `b ≠ 0` then `a * b ≠ 0`. One strategy\nis to write both `a` and `b` as `succ` of something, deduce that `a * b` is\nalso `succ` of something, and then `apply zero_ne_succ`.\n",
+     "level": 7,
+     "module": "Game.Levels.AdvMultiplication.L07mul_ne_zero",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint (hidden := true) \"Start with `apply eq_succ_of_ne_zero at ha` and `... at hb`\"\n  apply eq_succ_of_ne_zero at ha\n  apply eq_succ_of_ne_zero at hb\n  cases ha with c hc\n  cases hb with d hd\n  rw [hc, hd]\n  rw [mul_succ, add_succ]\n  symm\n  apply zero_ne_succ",
+     "statementDoc": "",
+     "statementName": "mul_ne_zero",
+     "statementSig": "(a b : ℕ) (ha : a ≠ 0) (hb : b ≠ 0) : a * b ≠ 0",
+     "theoremTab": "*",
+     "title": "mul_ne_zero",
+     "world": "AdvMultiplication"
+    },
+    {
+     "conclusion": "Here's the short proof:\n```\nhave h2 := mul_ne_zero a b\ntauto\n```\nThis works because, given `mul_ne_zero a b`,\nthe argument is reduced to pure logic.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": true,
+       "text": "Start with `have h2 := mul_ne_zero a b`."
+      },
+      {
+       "hidden": true,
+       "text": "Now the goal can be deduced from `h2` by pure logic, so use the `tauto`\n  tactic."
+      }
+     ],
+     "introduction": "\nThis level proves that if `a * b = 0` then `a = 0` or `b = 0`. It is\nlogically equivalent to the last level, so there is a very short proof.\n",
+     "level": 8,
+     "module": "Game.Levels.AdvMultiplication.L08mul_eq_zero",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint (hidden := true) \"Start with `have h2 := mul_ne_zero a b`.\"\n  have h2 := mul_ne_zero a b\n  Hint (hidden := true) \"Now the goal can be deduced from `h2` by pure logic, so use the `tauto`\n  tactic.\"\n  tauto",
+     "statementDoc": "",
+     "statementName": "mul_eq_zero",
+     "statementSig": "(a b : ℕ) (h : a * b = 0) : a = 0 ∨ b = 0",
+     "theoremTab": "*",
+     "title": "mul_eq_zero",
+     "world": "AdvMultiplication"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "The way to start this proof is `induction b with d hd generalizing c`."
+      },
+      {
+       "hidden": true,
+       "text": "Split into cases `c = 0` and `c = succ e` with `cases c with e`."
+      }
+     ],
+     "introduction": "\nIn this level we prove that if `a * b = a * c` and `a ≠ 0` then `b = c`. It is tricky, for\nseveral reasons. One of these is that\nwe need to introduce a new idea: we will need to understand the concept of\nmathematical induction a little better.\n\nStarting with `induction b with d hd` is too naive, because in the inductive step\nthe hypothesis is `a * d = a * c → d = c` but what we know is `a * succ d = a * c`,\nso the induction hypothesis does not apply!\n\nAssume `a ≠ 0` is fixed. The actual statement we want to prove by induction on `b` is\n\"for all `c`, if `a * b = a * c` then `b = c`\". This *can* be proved by induction,\nbecause we now have the flexibility to change `c`.\n",
+     "level": 9,
+     "module": "Game.Levels.AdvMultiplication.L09mul_left_cancel",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"The way to start this proof is `induction b with d hd generalizing c`.\"\n  induction b with d hd generalizing c\n  · Hint (hidden := true) \"Use `mul_eq_zero` and remember that `tauto` will solve a goal\n  if there are hypotheses `a = 0` and `a ≠ 0`.\"\n    rw [mul_zero] at h\n    symm at h\n    apply mul_eq_zero at h\n    cases h with h1 h2\n    · tauto\n    · rw [h2]\n      rfl\n  · Hint \"The inductive hypothesis `hd` is \\\"For all natural numbers `c`, `a * d = a * c → d = c`\\\".\n    You can `apply` it `at` any hypothesis of the form `a * d = a * ?`.\"\n    Hint (hidden := true) \"Split into cases `c = 0` and `c = succ e` with `cases c with e`.\"\n    cases c with e\n    · rw [mul_succ, mul_zero] at h\n      apply add_left_eq_zero at h\n      tauto\n    · rw [mul_succ, mul_succ] at h\n      apply add_right_cancel at h\n      apply hd at h\n      rw [h]\n      rfl",
+     "statementDoc": "",
+     "statementName": "mul_left_cancel",
+     "statementSig": "(a b c : ℕ) (ha : a ≠ 0) (h : a * b = a * c) : b = c",
+     "theoremTab": "*",
+     "title": "mul_left_cancel",
+     "world": "AdvMultiplication"
+    },
+    {
+     "conclusion": "\nA two-line proof is\n\n```\nnth_rewrite 2 [← mul_one a] at h\nexact mul_left_cancel a b 1 ha h\n```\n\nWe now have all the tools necessary to set up the basic theory of divisibility of naturals.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": true,
+       "text": "Reduce to the previous lemma with `nth_rewrite 2 [← mul_one a] at h`"
+      },
+      {
+       "hidden": true,
+       "text": "You can now `apply mul_left_cancel at h`"
+      }
+     ],
+     "introduction": "The lemma proved in the final level of this world will be helpful\nin Divisibility World.\n",
+     "level": 10,
+     "module": "Game.Levels.AdvMultiplication.L10mul_right_eq_self",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint (hidden := true) \"Reduce to the previous lemma with `nth_rewrite 2 [← mul_one a] at h`\"\n  nth_rewrite 2 [← mul_one a] at h\n  Hint (hidden := true) \"You can now `apply mul_left_cancel at h`\"\n  exact mul_left_cancel a b 1 ha h",
+     "statementDoc": "",
+     "statementName": "mul_right_eq_self",
+     "statementSig": "(a b : ℕ) (ha : a ≠ 0) (h : a * b = a) : b = 1",
+     "theoremTab": "*",
+     "title": "mul_right_eq_self",
+     "world": "AdvMultiplication"
+    }
+   ],
+   "title": "Advanced Multiplication World"
+  },
+  {
+   "id": "Algorithm",
+   "introduction": "\nProofs like $2+2=4$ and $a+b+c+d+e=e+d+c+b+a$ are very tedious to do by hand.\nIn Algorithm World we learn how to get the computer to do them for us.\n\nClick on \"Start\" to proceed.\n",
+   "levels": [
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "Having to rearrange variables manually using commutativity and\nassociativity is very tedious. We start by reminding you of this. `add_left_comm`\nis a key component in the first algorithm which we'll explain, but we need\nto prove it manually.\n\nRemember that you can do precision commutativity rewriting\nwith things like `rw [add_comm b c]`. And remember that\n`a + b + c` means `(a + b) + c`.\n",
+     "level": 1,
+     "module": "Game.Levels.Algorithm.L01add_left_comm",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  rw [← add_assoc]\n  rw [add_comm a b]\n  rw [add_assoc]\n  rfl",
+     "statementDoc": "If $a, b, c$ are numbers, then $a+(b+c)=b+(a+c)$.",
+     "statementName": "add_left_comm",
+     "statementSig": "(a b c : ℕ) : a + (b + c) = b + (a + c)",
+     "theoremTab": "+",
+     "title": "add_left_comm",
+     "world": "Algorithm"
+    },
+    {
+     "conclusion": "\nSo that's the algorithm: now let's use automation to perform it\nautomatically.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Start with `repeat rw [add_assoc]` to push all the brackets to the right."
+      },
+      {
+       "hidden": false,
+       "text": "Now use `rw [add_left_comm b c]` to switch `b` and `c` on the left\n  hand side."
+      },
+      {
+       "hidden": false,
+       "text": "Finally use a targeted `add_comm` to switch `b` and `d`."
+      },
+      {
+       "hidden": true,
+       "text": "`rw [add_comm b d]`."
+      }
+     ],
+     "introduction": "\nIn some later worlds, we're going to see some much nastier levels,\nlike `(a + a + 1) + (b + b + 1) = (a + b + 1) + (a + b + 1)`.\nBrackets need to be moved around, and variables need to be swapped.\n\nIn this level, `(a + b) + (c + d) = ((a + c) + d) + b`,\nlet's forget about the brackets and just think about\nthe variable order.\nTo turn `a+b+c+d` into `a+c+d+b` we need to swap `b` and `c`,\nand then swap `b` and `d`. But this is easier than you\nthink with `add_left_comm`.\n",
+     "level": 2,
+     "module": "Game.Levels.Algorithm.L02add_algo1",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Start with `repeat rw [add_assoc]` to push all the brackets to the right.\"\n  repeat rw [add_assoc]\n  Hint \"Now use `rw [add_left_comm b c]` to switch `b` and `c` on the left\n  hand side.\"\n  rw [add_left_comm b c]\n  Hint \"Finally use a targeted `add_comm` to switch `b` and `d`.\"\n  Hint (hidden := true) \"`rw [add_comm b d]`.\"\n  rw [add_comm b d]\n  rfl",
+     "statementDoc": "If $a, b$, $c$ and $d$ are numbers, we have\n$(a + b) + (c + d) = ((a + c) + d) + b.$",
+     "statementName": null,
+     "statementSig": "(a b c d : ℕ) : a + b + (c + d) = a + c + d + b",
+     "theoremTab": "+",
+     "title": "making life easier",
+     "world": "Algorithm"
+    },
+    {
+     "conclusion": "\nLet's now make our own tactic to do this.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Solve this level in one line with `simp only [add_left_comm, add_comm]`"
+      }
+     ],
+     "introduction": "\nLean's simplifier, `simp`, is \"`rw` on steroids\". It will rewrite every lemma\ntagged with `simp` and every lemma fed to it by the user, as much as it can.\n\nThis level is not a level which you want to solve by hand.\nGet the simplifier to solve it for you.\n",
+     "level": 3,
+     "module": "Game.Levels.Algorithm.L03add_algo2",
+     "newDefinitions": [],
+     "newTactics": [
+      "simp"
+     ],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Solve this level in one line with `simp only [add_left_comm, add_comm]`\"\n  simp only [add_left_comm, add_comm]",
+     "statementDoc": "If $a, b,\\ldots h$ are arbitrary natural numbers, we have\n$(d + f) + (h + (a + c)) + (g + e + b) = a + b + c + d + e + f + g + h$.",
+     "statementName": null,
+     "statementSig": "(a b c d e f g h : ℕ) :\n    (d + f) + (h + (a + c)) + (g + e + b) = a + b + c + d + e + f + g + h",
+     "theoremTab": "+",
+     "title": "making life simple",
+     "world": "Algorithm"
+    },
+    {
+     "conclusion": "\nLet's now move on to a more efficient approach to questions\ninvolving numerals, such as `20 + 20 = 40`.\n",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nYou can make your own tactics in Lean.\nThis code here\n```\nmacro \"simp_add\" : tactic => `(tactic|(\n  simp only [add_assoc, add_left_comm, add_comm]))\n```\nwas used to create a new tactic `simp_add`, which runs\n`simp only [add_assoc, add_left_comm, add_comm]`.\nTry running `simp_add` to solve this level!\n",
+     "level": 4,
+     "module": "Game.Levels.Algorithm.L04add_algo3",
+     "newDefinitions": [],
+     "newTactics": [
+      "simp_add"
+     ],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  simp_add",
+     "statementDoc": "If $a, b,\\ldots h$ are arbitrary natural numbers, we have\n$(d + f) + (h + (a + c)) + (g + e + b) = a + b + c + d + e + f + g + h$.",
+     "statementName": null,
+     "statementSig": "(a b c d e f g h : ℕ) :\n    (d + f) + (h + (a + c)) + (g + e + b) = a + b + c + d + e + f + g + h",
+     "theoremTab": "+",
+     "title": "the simplest approach",
+     "world": "Algorithm"
+    },
+    {
+     "conclusion": "\nNice! You've proved `succ_inj`!\nLet's now prove Peano's other axiom, that successors can't be $0$.\n",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Start with `rw [← pred_succ a]` and take it from there."
+      }
+     ],
+     "introduction": "\nWe now start work on an algorithm to do addition more efficiently. Recall that\nwe defined addition by recursion, saying what it did on `0` and successors.\nIt is an axiom of Lean that recursion is a valid\nway to define functions from types such as the naturals.\n\nLet's define a new function `pred` from the naturals to the naturals, which\nattempts to subtract 1 from the input. The definition is this:\n\n```\npred 0 := 37\npred (succ n) := n\n```\n\nWe cannot subtract one from 0, so we just return a junk value. As well as this\ndefinition, we also create a new lemma `pred_succ`, which says that `pred (succ n) = n`.\nLet's use this lemma to prove `succ_inj`, the theorem which\nPeano assumed as an axiom and which we have already used extensively without justification.\n",
+     "level": 5,
+     "module": "Game.Levels.Algorithm.L05pred",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [
+      "MyNat.pred_succ"
+     ],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Start with `rw [← pred_succ a]` and take it from there.\"\n  rw [← pred_succ a]\n  rw [h]\n  rw [pred_succ]\n  rfl",
+     "statementDoc": "If $\\operatorname{succ}(a)=\\operatorname{succ}(b)$ then $a=b$.",
+     "statementName": null,
+     "statementSig": "(a b : ℕ) (h : succ a = succ b) : a = b",
+     "theoremTab": "Peano",
+     "title": "pred",
+     "world": "Algorithm"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Start with `intro h` (remembering that `X ≠ Y` is just notation\n  for `X = Y → False`)."
+      },
+      {
+       "hidden": false,
+       "text": "We're going to change that `False` into `True`. Start by changing it into\n  `is_zero (succ a)` by executing `rw [← is_zero_succ a]`."
+      },
+      {
+       "hidden": false,
+       "text": "See if you can take it from here. Look at the new lemmas and tactic\n  available on the right."
+      }
+     ],
+     "introduction": "\nWe define a function `is_zero` thus:\n\n```\nis_zero 0 := True\nis_zero (succ n) := False\n```\n\nWe also create two lemmas, `is_zero_zero` and `is_zero_succ n`, saying that `is_zero 0 = True`\nand `is_zero (succ n) = False`. Let's use these lemmas to prove `succ_ne_zero`, Peano's\nLast Axiom. Actually, we have been using `zero_ne_succ` before, but it's handy to have\nthis opposite version too, which can be proved in the same way. Note: you can\ncheat here by using `zero_ne_succ` but the point of this world is to show\nyou how to *prove* results like that.\n\nIf you can turn your goal into `True`, then the `trivial` tactic will solve it.\n",
+     "level": 6,
+     "module": "Game.Levels.Algorithm.L06is_zero",
+     "newDefinitions": [],
+     "newTactics": [
+      "trivial"
+     ],
+     "newTheorems": [
+      "MyNat.is_zero_zero",
+      "MyNat.is_zero_succ"
+     ],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Start with `intro h` (remembering that `X ≠ Y` is just notation\n  for `X = Y → False`).\"\n  intro h\n  Hint \"We're going to change that `False` into `True`. Start by changing it into\n  `is_zero (succ a)` by executing `rw [← is_zero_succ a]`.\"\n  rw [← is_zero_succ a]\n  Hint \"See if you can take it from here. Look at the new lemmas and tactic\n  available on the right.\"\n  rw [h]\n  rw [is_zero_zero]\n  trivial",
+     "statementDoc": "$\\operatorname{succ}(a) \\neq 0$.",
+     "statementName": "succ_ne_zero",
+     "statementSig": "(a : ℕ) : succ a ≠ 0",
+     "theoremTab": "Peano",
+     "title": "is_zero",
+     "world": "Algorithm"
+    },
+    {
+     "conclusion": "",
+     "disabledTactics": [],
+     "hints": [
+      {
+       "hidden": false,
+       "text": "Start with `contrapose! h`, to change the goal into its\n  contrapositive, namely a hypothesis of `succ m = succ n` and a goal of `m = n`."
+      },
+      {
+       "hidden": false,
+       "text": "Can you take it from here? (note: if you try `contrapose! h` again, it will\n  take you back to where you started!)"
+      }
+     ],
+     "introduction": "\nHere we begin to\ndevelop an algorithm which, given two naturals `a` and `b`, returns the answer\nto \"does `a = b`?\"\n\nHere is the algorithm. First note that `a` and `b` are numbers, and hence\nare either `0` or successors.\n\n*) If `a` and `b` are both `0`, return \"yes\".\n\n*) If one is `0` and the other is `succ n`, return \"no\".\n\n*) If `a = succ m` and `b = succ n`, then return the answer to \"does `m = n`?\"\n\nOur job now is to *prove* that this algorithm always gives the correct answer. The proof that\n`0 = 0` is `rfl`. The proof that `0 ≠ succ n` is `zero_ne_succ n`, and the proof\nthat `succ m ≠ 0` is `succ_ne_zero m`. The proof that if `h : m = n` then\n`succ m = succ n` is `rw [h]` and then `rfl`. This level is a proof of the one\nremaining job we have to do: if `a ≠ b` then `succ a ≠ succ b`.\n",
+     "level": 7,
+     "module": "Game.Levels.Algorithm.L07succ_ne_succ",
+     "newDefinitions": [],
+     "newTactics": [
+      "contrapose",
+      "contrapose"
+     ],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  Hint \"Start with `contrapose! h`, to change the goal into its\n  contrapositive, namely a hypothesis of `succ m = succ n` and a goal of `m = n`.\"\n  contrapose! h\n  Hint \"Can you take it from here? (note: if you try `contrapose! h` again, it will\n  take you back to where you started!)\"\n  apply succ_inj at h\n  exact h",
+     "statementDoc": "If $a \\neq b$ then $\\operatorname{succ}(a) \\neq\\operatorname{succ}(b)$.",
+     "statementName": "succ_ne_succ",
+     "statementSig": "(m n : ℕ) (h : m ≠ n) : succ m ≠ succ n",
+     "theoremTab": "Peano",
+     "title": "An algorithm for equality",
+     "world": "Algorithm"
+    },
+    {
+     "conclusion": "You can read more about the `decide` tactic by clicking\non it in the top right.",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nImplementing the algorithm for equality of naturals, and the proof that it is correct,\nlooks like this:\n\n```\ninstance instDecidableEq : DecidableEq ℕ\n| 0, 0 => isTrue <| by\n  show 0 = 0\n  rfl\n| succ m, 0 => isFalse <| by\n  show succ m ≠ 0\n  exact succ_ne_zero m\n| 0, succ n => isFalse <| by\n  show 0 ≠ succ n\n  exact zero_ne_succ n\n| succ m, succ n =>\n  match instDecidableEq m n with\n  | isTrue (h : m = n) => isTrue <| by\n    show succ m = succ n\n    rw [h]\n    rfl\n  | isFalse (h : m ≠ n) => isFalse <| by\n    show succ m ≠ succ n\n    exact succ_ne_succ m n h\n```\n\nThis Lean code is a formally verified algorithm for deciding equality\nbetween two naturals. I've typed it in already, behind the scenes.\nBecause the algorithm is formally verified to be correct, we can\nuse it in Lean proofs. You can run the algorithm with the `decide` tactic.\n",
+     "level": 8,
+     "module": "Game.Levels.Algorithm.L08decide",
+     "newDefinitions": [],
+     "newTactics": [
+      "decide"
+     ],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  decide",
+     "statementDoc": "$20+20=40$.",
+     "statementName": null,
+     "statementSig": ": (20 : ℕ) + 20 = 40",
+     "theoremTab": "Peano",
+     "title": "decide",
+     "world": "Algorithm"
+    },
+    {
+     "conclusion": "Congratulations! You've finished Algorithm World. These algorithms\nwill be helpful for you in Even-Odd World (when someone gets around to\nimplementing it).",
+     "disabledTactics": [],
+     "hints": [],
+     "introduction": "\nWe gave a pretty unsatisfactory proof of `2 + 2 ≠ 5` earlier on; now give a nicer one.\n",
+     "level": 9,
+     "module": "Game.Levels.Algorithm.L09decide2",
+     "newDefinitions": [],
+     "newTactics": [],
+     "newTheorems": [],
+     "preamble": [
+      "namespace MyNat"
+     ],
+     "proof": "  decide",
+     "statementDoc": "$2+2 \\neq 5.$",
+     "statementName": null,
+     "statementSig": ": (2 : ℕ) + 2 ≠ 5",
+     "theoremTab": "Peano",
+     "title": "decide again",
+     "world": "Algorithm"
+    }
+   ],
+   "title": "Algorithm World"
   }
  ]
 }
