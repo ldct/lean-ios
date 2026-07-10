@@ -82,7 +82,10 @@ targets:
       - name: Build Lean artifacts via Make
         script: |
           set -euo pipefail
-          export PATH="$HOME/.elan/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+          # Prefer the locally built stage1 (matches the lean4 submodule and the
+          # GMP-off olean flags; see docs/building-against-local-lean4.md);
+          # fall back to elan.
+          export PATH="$HOME/gits/lean4-host-build/stage1/bin:$HOME/.elan/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
           cd "$PROJECT_DIR"
           case "$PLATFORM_NAME" in
             iphoneos)        make -f Makefile.device app ;;
