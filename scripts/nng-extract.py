@@ -91,7 +91,8 @@ class LevelParser:
         self.text = path.read_text(encoding="utf-8")
         self.data = {
             "imports": [], "preamble": [], "hints": [],
-            "newTactics": [], "newTheorems": [], "newDefinitions": [],
+            "newTactics": [], "newHiddenTactics": [],
+            "newTheorems": [], "newDefinitions": [],
             "disabledTactics": [], "disabledTheorems": [],
             "docs": [],  # (kind, name, displayName, category, content)
         }
@@ -145,8 +146,12 @@ class LevelParser:
             elif word in IDENTS_CMDS:
                 eol = text.find("\n", i)
                 eol = len(text) if eol < 0 else eol
-                names = [n.strip("«»") for n in IDENT_RE.findall(text[i:eol])]
-                key = {"NewTactic": "newTactics", "NewHiddenTactic": "newTactics",
+                # tactic names may end in '!' (e.g. contrapose!), which
+                # IDENT_RE deliberately excludes elsewhere
+                names = [n.strip("«»") for n in
+                         re.findall(IDENT_RE.pattern + "!?", text[i:eol])]
+                key = {"NewTactic": "newTactics",
+                       "NewHiddenTactic": "newHiddenTactics",
                        "NewTheorem": "newTheorems", "NewDefinition": "newDefinitions",
                        "DisabledTactic": "disabledTactics",
                        "DisabledTheorem": "disabledTheorems"}[word]
@@ -171,10 +176,12 @@ class LevelParser:
                     "category": category, "content": pending_doc or ""})
                 pending_doc = None
             elif word == "Statement":
-                self.parse_statement(i, pending_doc)
+                # returns the index just past the proof body; commands after
+                # it (Conclusion, NewHiddenTactic, …) are picked up by
+                # continuing this loop
+                i = self.parse_statement(i, pending_doc)
                 pending_doc = None
-                return  # statement is last thing we need; prose after is Conclusion
-                # (handled below by re-scan)
+                continue
             else:
                 # skip to end of line for anything else (macro defs, set_option, …)
                 eol = text.find("\n", i)
@@ -182,7 +189,7 @@ class LevelParser:
             if word != "Statement":
                 pending_doc = None
 
-    def parse_statement(self, i: int, doc: str | None):
+    def parse_statement(self, i: int, doc: str | None) -> int:
         text, d = self.text, self.data
         d["statementDoc"] = doc or ""
         # optional name
@@ -253,13 +260,7 @@ class LevelParser:
                               d["proof"], re.M):
             s, _ = scan_string(d["proof"], hm.end() - 1)
             d["hints"].append({"text": s, "hidden": "hidden" in (hm.group(2) or "")})
-        # conclusion appears after the proof; scan the remainder
-        rest = text[j:]
-        cm = re.search(r"^Conclusion\s*", rest, re.M)
-        if cm:
-            k = skip_ws_comments(rest, cm.end())
-            if k < len(rest) and rest[k] == '"':
-                d["conclusion"], _ = scan_string(rest, k)
+        return j
 
 
 def module_path(nng4: Path, module: str) -> Path:
@@ -312,6 +313,7 @@ def main():
                 "proof": ld["proof"],
                 "hints": ld["hints"],
                 "newTactics": ld["newTactics"],
+                "newHiddenTactics": ld["newHiddenTactics"],
                 "newTheorems": ld["newTheorems"],
                 "newDefinitions": ld["newDefinitions"],
                 "disabledTactics": ld["disabledTactics"],

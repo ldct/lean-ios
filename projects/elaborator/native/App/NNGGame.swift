@@ -25,6 +25,9 @@ private struct NNGLevelJSON: Decodable {
   let preamble: [String]
   let hints: [NNGHintInfo]
   let newTactics: [String]
+  /// Tactics usable from this level on but kept out of the inventory display
+  /// (upstream `NewHiddenTactic`, e.g. `nth_rewrite` at Tutorial L02).
+  let newHiddenTactics: [String]
   let newTheorems: [String]
   let newDefinitions: [String]
   let disabledTactics: [String]

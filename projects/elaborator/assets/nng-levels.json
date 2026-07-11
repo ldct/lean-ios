@@ -21,6 +21,11 @@
     "content": "`ℕ` is the natural numbers, just called \\\"numbers\\\" in this game. It's\ndefined via two rules:\n\n* `0 : ℕ` (zero is a number)\n* `succ (n : ℕ) : ℕ` (the successor of a number is a number)\n\n## Game Implementation\n\n*The game uses its own copy of the natural numbers, called `MyNat` with notation `ℕ`.\nIt is distinct from the Lean natural numbers `Nat`, which should hopefully\nnever leak into the natural number game.*",
     "displayName": "ℕ"
    },
+   "Ne": {
+    "category": null,
+    "content": "`a ≠ b` is *notation* for `(a = b) → False`.\n\nThe reason this is mathematically\nvalid is that if `P` is a true-false statement then `P → False`\nis the logical opposite of `P`. Indeed `True → False` is false,\nand `False → False` is true!\n\nThe upshot of this is that you can treat `a ≠ b` in exactly\nthe same way as you treat any implication `P → Q`. For example,\nif your *goal* is of the form `a ≠ b` then you can make progress\nwith `intro h`, and if you have a hypothesis `h` of the\nform `a ≠ b` then you can `apply h at h1` if `h1` is a proof\nof `a = b`.",
+    "displayName": "≠"
+   },
    "Pow": {
     "category": null,
     "content": "`Pow a b`, with notation `a ^ b`, is the usual\n  exponentiation of natural numbers. Internally it is\n  defined via two axioms:\n\n  * `pow_zero a : a ^ 0 = 1`\n\n  * `pow_succ a b : a ^ succ b = a ^ b * a`\n\nNote in particular that `0 ^ 0 = 1`.",
@@ -51,6 +56,11 @@
    "exact": {
     "category": null,
     "content": "## Summary\n\nIf the goal is a statement `P`, then `exact h` will close the goal if `h` is a proof of `P`.\n\n### Example\n\nIf the goal is `x = 37` and you have a hypothesis `h : x = 37`\nthen `exact h` will solve the goal.\n\n### Example\n\nIf the goal is `x + 0 = x` then `exact add_zero x` will close the goal.\n\n### Exact needs to be exactly right\n\nNote that `exact add_zero` will *not work* in the previous example;\nfor `exact h` to work, `h` has to be *exactly* a proof of the goal.\n`add_zero` is a proof of `∀ n, n + 0 = n` or, if you like,\na proof of `? + 0 = ?` where `?` needs to be supplied by the user.\nThis is in contrast to `rw` and `apply`, which will \\\"guess the inputs\\\"\nif necessary. If the goal is `x + 0 = x` then `rw [add_zero]`\nand `rw [add_zero x]` will both change the goal to `x = x`,\nbecause `rw` guesses the input to the function `add_zero`.",
+    "displayName": null
+   },
+   "induction": {
+    "category": null,
+    "content": "## Summary\n\nIf `n : ℕ` is an object, and the goal mentions `n`, then `induction n with d hd`\nattempts to prove the goal by induction on `n`, with the inductive\nvariable in the successor case being `d`, and the inductive hypothesis being `hd`.\n\n### Example:\nIf the goal is\n```\n0 + n = n\n```\n\nthen\n\n`induction n with d hd`\n\nwill turn it into two goals. The first is `0 + 0 = 0`;\nthe second has an assumption `hd : 0 + d = d` and goal\n`0 + succ d = succ d`.\n\nNote that you must prove the first\ngoal before you can access the second one.",
     "displayName": null
    },
    "intro": {
@@ -500,6 +510,7 @@
      "level": 1,
      "module": "Game.Levels.Tutorial.L01rfl",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [
       "rfl"
      ],
@@ -536,10 +547,12 @@
      "level": 2,
      "module": "Game.Levels.Tutorial.L02rw",
      "newDefinitions": [],
-     "newTactics": [
-      "rw",
+     "newHiddenTactics": [
       "repeat",
       "nth_rewrite"
+     ],
+     "newTactics": [
+      "rw"
      ],
      "newTheorems": [],
      "preamble": [
@@ -580,6 +593,7 @@
      "newDefinitions": [
       "MyNat"
      ],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [
       "MyNat.one_eq_succ_zero",
@@ -593,7 +607,7 @@
      "statementDoc": "$2$ is the number after the number after $0$.",
      "statementName": null,
      "statementSig": ": 2 = succ (succ 0)",
-     "theoremTab": null,
+     "theoremTab": "012",
      "title": "Numbers",
      "world": "Tutorial"
     },
@@ -618,6 +632,7 @@
      "level": 4,
      "module": "Game.Levels.Tutorial.L04rw_backwards",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -650,6 +665,7 @@
      "newDefinitions": [
       "Add"
      ],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [
       "MyNat.add_zero"
@@ -682,6 +698,7 @@
      "level": 6,
      "module": "Game.Levels.Tutorial.L06add_zero2",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -691,7 +708,7 @@
      "statementDoc": "$a+(b+0)+(c+0)=a+b+c.$",
      "statementName": null,
      "statementSig": "(a b c : ℕ) : a + (b + 0) + (c + 0) = a + b + c",
-     "theoremTab": null,
+     "theoremTab": "+",
      "title": "Precision rewriting",
      "world": "Tutorial"
     },
@@ -724,6 +741,7 @@
      "level": 7,
      "module": "Game.Levels.Tutorial.L07add_succ",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [
       "MyNat.add_succ"
@@ -756,6 +774,7 @@
      "level": 8,
      "module": "Game.Levels.Tutorial.L08twoaddtwo",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -801,7 +820,10 @@
      "level": 1,
      "module": "Game.Levels.Addition.L01zero_add",
      "newDefinitions": [],
-     "newTactics": [],
+     "newHiddenTactics": [],
+     "newTactics": [
+      "induction"
+     ],
      "newTheorems": [],
      "preamble": [
       "namespace MyNat"
@@ -810,7 +832,7 @@
      "statementDoc": "For all natural numbers $n$, we have $0 + n = n$.",
      "statementName": "zero_add",
      "statementSig": "(n : ℕ) : 0 + n = n",
-     "theoremTab": null,
+     "theoremTab": "+",
      "title": "zero_add",
      "world": "Addition"
     },
@@ -831,6 +853,7 @@
      "level": 2,
      "module": "Game.Levels.Addition.L02succ_add",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -840,7 +863,7 @@
      "statementDoc": "For all natural numbers $a, b$, we have\n$ \\operatorname{succ}(a) + b = \\operatorname{succ}(a + b)$.",
      "statementName": "succ_add",
      "statementSig": "(a b : ℕ) : succ a + b = succ (a + b)",
-     "theoremTab": null,
+     "theoremTab": "+",
      "title": "succ_add",
      "world": "Addition"
     },
@@ -857,6 +880,7 @@
      "level": 3,
      "module": "Game.Levels.Addition.L03add_comm",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -866,7 +890,7 @@
      "statementDoc": "On the set of natural numbers, addition is commutative.\nIn other words, if `a` and `b` are arbitrary natural numbers, then\n$a + b = b + a$.",
      "statementName": "add_comm",
      "statementSig": "(a b : ℕ) : a + b = b + a",
-     "theoremTab": null,
+     "theoremTab": "+",
      "title": "add_comm (level boss)",
      "world": "Addition"
     },
@@ -883,6 +907,7 @@
      "level": 4,
      "module": "Game.Levels.Addition.L04add_assoc",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -892,7 +917,7 @@
      "statementDoc": "On the set of natural numbers, addition is associative.\nIn other words, if $a, b$ and $c$ are arbitrary natural numbers, we have\n$ (a + b) + c = a + (b + c). $",
      "statementName": "add_assoc",
      "statementSig": "(a b c : ℕ) : a + b + c = a + (b + c)",
-     "theoremTab": null,
+     "theoremTab": "+",
      "title": "add_assoc (associativity of addition)",
      "world": "Addition"
     },
@@ -904,6 +929,7 @@
      "level": 5,
      "module": "Game.Levels.Addition.L05add_right_comm",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -913,7 +939,7 @@
      "statementDoc": "If $a, b$ and $c$ are arbitrary natural numbers, we have\n$(a + b) + c = (a + c) + b$.",
      "statementName": "add_right_comm",
      "statementSig": "(a b c : ℕ) : a + b + c = a + c + b",
-     "theoremTab": null,
+     "theoremTab": "+",
      "title": "add_right_comm",
      "world": "Addition"
     }
@@ -934,6 +960,7 @@
      "newDefinitions": [
       "Mul"
      ],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [
       "MyNat.mul_zero",
@@ -946,7 +973,7 @@
      "statementDoc": "For any natural number $m$, we have $ m \\times 1 = m$.",
      "statementName": "mul_one",
      "statementSig": "(m : ℕ) : m * 1 = m",
-     "theoremTab": null,
+     "theoremTab": "*",
      "title": "mul_one",
      "world": "Multiplication"
     },
@@ -958,6 +985,7 @@
      "level": 2,
      "module": "Game.Levels.Multiplication.L02zero_mul",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -979,6 +1007,7 @@
      "level": 3,
      "module": "Game.Levels.Multiplication.L03succ_mul",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -988,7 +1017,7 @@
      "statementDoc": "For all natural numbers $a$ and $b$, we have\n$(\\operatorname{succ}\\ a) \\times b = a\\times b + b$.",
      "statementName": "succ_mul",
      "statementSig": "(a b : ℕ) : succ a * b = a * b + b",
-     "theoremTab": null,
+     "theoremTab": "*",
      "title": "succ_mul",
      "world": "Multiplication"
     },
@@ -1000,6 +1029,7 @@
      "level": 4,
      "module": "Game.Levels.Multiplication.L04mul_comm",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1009,7 +1039,7 @@
      "statementDoc": "Multiplication is commutative.",
      "statementName": "mul_comm",
      "statementSig": "(a b : ℕ) : a * b = b * a",
-     "theoremTab": null,
+     "theoremTab": "*",
      "title": "mul_comm",
      "world": "Multiplication"
     },
@@ -1021,6 +1051,7 @@
      "level": 5,
      "module": "Game.Levels.Multiplication.L05one_mul",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1030,7 +1061,7 @@
      "statementDoc": "For any natural number $m$, we have $ 1 \\times m = m$.",
      "statementName": "one_mul",
      "statementSig": "(m : ℕ): 1 * m = m",
-     "theoremTab": null,
+     "theoremTab": "*",
      "title": "one_mul",
      "world": "Multiplication"
     },
@@ -1042,6 +1073,7 @@
      "level": 6,
      "module": "Game.Levels.Multiplication.L06two_mul",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1051,7 +1083,7 @@
      "statementDoc": "For any natural number $m$, we have $ 2 \\times m = m+m$.",
      "statementName": "two_mul",
      "statementSig": "(m : ℕ): 2 * m = m + m",
-     "theoremTab": null,
+     "theoremTab": "*",
      "title": "two_mul",
      "world": "Multiplication"
     },
@@ -1072,6 +1104,7 @@
      "level": 7,
      "module": "Game.Levels.Multiplication.L07mul_add",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1081,7 +1114,7 @@
      "statementDoc": "Multiplication is distributive over addition on the left.\nIn other words, for all natural numbers $a$, $b$ and $c$, we have\n$a(b + c) = ab + ac$.",
      "statementName": "mul_add",
      "statementSig": "(a b c : ℕ) : a * (b + c) = a * b + a * c",
-     "theoremTab": null,
+     "theoremTab": "*",
      "title": "mul_add",
      "world": "Multiplication"
     },
@@ -1093,6 +1126,7 @@
      "level": 8,
      "module": "Game.Levels.Multiplication.L08add_mul",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1102,7 +1136,7 @@
      "statementDoc": "Addition is distributive over multiplication.\nIn other words, for all natural numbers $a$, $b$ and $c$, we have\n$(a + b) \\times c = ac + bc$.",
      "statementName": "add_mul",
      "statementSig": "(a b c : ℕ) : (a + b) * c = a * c + b * c",
-     "theoremTab": null,
+     "theoremTab": "*",
      "title": "add_mul",
      "world": "Multiplication"
     },
@@ -1114,6 +1148,7 @@
      "level": 9,
      "module": "Game.Levels.Multiplication.L09mul_assoc",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1123,7 +1158,7 @@
      "statementDoc": "Multiplication is associative.\nIn other words, for all natural numbers $a$, $b$ and $c$, we have\n$(ab)c = a(bc)$.",
      "statementName": "mul_assoc",
      "statementSig": "(a b c : ℕ) : (a * b) * c = a * (b * c)",
-     "theoremTab": null,
+     "theoremTab": "*",
      "title": "mul_assoc",
      "world": "Multiplication"
     }
@@ -1144,6 +1179,7 @@
      "newDefinitions": [
       "Pow"
      ],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [
       "MyNat.pow_zero"
@@ -1155,7 +1191,7 @@
      "statementDoc": "$0 ^ 0 = 1$",
      "statementName": "zero_pow_zero",
      "statementSig": ": (0 : ℕ) ^ 0 = 1",
-     "theoremTab": null,
+     "theoremTab": "^",
      "title": "zero_pow_zero",
      "world": "Power"
     },
@@ -1167,6 +1203,7 @@
      "level": 2,
      "module": "Game.Levels.Power.L02zero_pow_succ",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [
       "MyNat.pow_succ"
@@ -1178,7 +1215,7 @@
      "statementDoc": "For all numbers $m$, $0 ^{\\operatorname{succ} (m)} = 0$.",
      "statementName": "zero_pow_succ",
      "statementSig": "(m : ℕ) : (0 : ℕ) ^ (succ m) = 0",
-     "theoremTab": null,
+     "theoremTab": "^",
      "title": "zero_pow_succ",
      "world": "Power"
     },
@@ -1190,6 +1227,7 @@
      "level": 3,
      "module": "Game.Levels.Power.L03pow_one",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1199,7 +1237,7 @@
      "statementDoc": "For all naturals $a$, $a ^ 1 = a$.",
      "statementName": "pow_one",
      "statementSig": "(a : ℕ) : a ^ 1 = a",
-     "theoremTab": null,
+     "theoremTab": "^",
      "title": "pow_one",
      "world": "Power"
     },
@@ -1211,6 +1249,7 @@
      "level": 4,
      "module": "Game.Levels.Power.L04one_pow",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1220,7 +1259,7 @@
      "statementDoc": "For all naturals $m$, $1 ^ m = 1$.",
      "statementName": "one_pow",
      "statementSig": "(m : ℕ) : (1 : ℕ) ^ m = 1",
-     "theoremTab": null,
+     "theoremTab": "^",
      "title": "one_pow",
      "world": "Power"
     },
@@ -1232,6 +1271,7 @@
      "level": 5,
      "module": "Game.Levels.Power.L05pow_two",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1241,7 +1281,7 @@
      "statementDoc": "For all naturals $a$, $a ^ 2 = a \\times a$.",
      "statementName": "pow_two",
      "statementSig": "(a : ℕ) : a ^ 2 = a * a",
-     "theoremTab": null,
+     "theoremTab": "^",
      "title": "pow_two",
      "world": "Power"
     },
@@ -1253,6 +1293,7 @@
      "level": 6,
      "module": "Game.Levels.Power.L06pow_add",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1262,7 +1303,7 @@
      "statementDoc": "For all naturals $a$, $m$, $n$, we have $a^{m + n} = a ^ m  a ^ n$.",
      "statementName": "pow_add",
      "statementSig": "(a m n : ℕ) : a ^ (m + n) = a ^ m * a ^ n",
-     "theoremTab": null,
+     "theoremTab": "^",
      "title": "pow_add",
      "world": "Power"
     },
@@ -1274,6 +1315,7 @@
      "level": 7,
      "module": "Game.Levels.Power.L07mul_pow",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1283,7 +1325,7 @@
      "statementDoc": "For all naturals $a$, $b$, $n$, we have $(ab) ^ n = a ^ nb ^ n$.",
      "statementName": "mul_pow",
      "statementSig": "(a b n : ℕ) : (a * b) ^ n = a ^ n * b ^ n",
-     "theoremTab": null,
+     "theoremTab": "^",
      "title": "mul_pow",
      "world": "Power"
     },
@@ -1295,6 +1337,7 @@
      "level": 8,
      "module": "Game.Levels.Power.L08pow_pow",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1304,7 +1347,7 @@
      "statementDoc": "For all naturals $a$, $m$, $n$, we have $(a ^ m) ^ n = a ^ {mn}$.",
      "statementName": "pow_pow",
      "statementSig": "(a m n : ℕ) : (a ^ m) ^ n = a ^ (m * n)",
-     "theoremTab": null,
+     "theoremTab": "^",
      "title": "pow_pow",
      "world": "Power"
     },
@@ -1316,6 +1359,7 @@
      "level": 9,
      "module": "Game.Levels.Power.L09add_sq",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1325,7 +1369,7 @@
      "statementDoc": "For all numbers $a$ and $b$, we have\n$$(a+b)^2=a^2+b^2+2ab.$$",
      "statementName": "add_sq",
      "statementSig": "(a b : ℕ) : (a + b) ^ 2 = a ^ 2 + b ^ 2 + 2 * a * b",
-     "theoremTab": null,
+     "theoremTab": "^",
      "title": "add_sq",
      "world": "Power"
     },
@@ -1337,6 +1381,9 @@
      "level": 10,
      "module": "Game.Levels.Power.L10FLT",
      "newDefinitions": [],
+     "newHiddenTactics": [
+      "xyzzy"
+     ],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1346,7 +1393,7 @@
      "statementDoc": "For all naturals $a$ $b$ $c$ and $n$, we have\n$$(a+1)^{n+3}+(b+1)^{n+3}\\not=(c+1)^{n+3}.$$",
      "statementName": null,
      "statementSig": "(a b c n : ℕ) : (a + 1) ^ (n + 3) + (b + 1) ^ (n + 3) ≠ (c + 1) ^ (n + 3)",
-     "theoremTab": null,
+     "theoremTab": "^",
      "title": "Fermat's Last Theorem",
      "world": "Power"
     }
@@ -1370,6 +1417,7 @@
      "level": 1,
      "module": "Game.Levels.Implication.L01exact",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [
       "exact"
      ],
@@ -1406,6 +1454,7 @@
      "level": 2,
      "module": "Game.Levels.Implication.L02exact2",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1436,6 +1485,7 @@
      "level": 3,
      "module": "Game.Levels.Implication.L03apply",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [
       "apply"
      ],
@@ -1488,6 +1538,7 @@
      "level": 4,
      "module": "Game.Levels.Implication.L04succ_inj",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [
       "MyNat.succ_inj"
@@ -1528,6 +1579,7 @@
      "level": 5,
      "module": "Game.Levels.Implication.L05succ_inj2",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1558,6 +1610,7 @@
      "level": 6,
      "module": "Game.Levels.Implication.L06intro",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [
       "intro"
      ],
@@ -1598,6 +1651,7 @@
      "level": 7,
      "module": "Game.Levels.Implication.L07intro2",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1623,7 +1677,10 @@
      "introduction": "We still can't prove `2 + 2 ≠ 5` because we have not talked about the\ndefinition of `≠`. In Lean, `a ≠ b` is *notation* for `a = b → False`.\nHere `False` is a generic false proposition, and `→` is Lean's notation\nfor \"implies\". In logic we learn\nthat `True → False` is false, but `False → False` is true. Hence\n`X → False` is the logical opposite of `X`.\n\nEven though `a ≠ b` does not look like an implication,\nyou should treat it as an implication. The next two levels will show you how.\n\n`False` is a goal which you cannot deduce from a consistent set of assumptions!\nSo if your goal is `False` then you had better hope that your hypotheses\nare contradictory, which they are in this level.\n",
      "level": 8,
      "module": "Game.Levels.Implication.L08ne",
-     "newDefinitions": [],
+     "newDefinitions": [
+      "Ne"
+     ],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1658,6 +1715,7 @@
      "level": 9,
      "module": "Game.Levels.Implication.L09zero_ne_succ",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [
       "MyNat.zero_ne_succ"
@@ -1681,6 +1739,7 @@
      "level": 10,
      "module": "Game.Levels.Implication.L10one_ne_zero",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [
       "symm"
      ],
@@ -1704,6 +1763,7 @@
      "level": 11,
      "module": "Game.Levels.Implication.L11two_add_two_ne_five",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1737,6 +1797,7 @@
      "level": 1,
      "module": "Game.Levels.AdvAddition.L01add_right_cancel",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1758,6 +1819,7 @@
      "level": 2,
      "module": "Game.Levels.AdvAddition.L02add_left_cancel",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1779,6 +1841,7 @@
      "level": 3,
      "module": "Game.Levels.AdvAddition.L03add_left_eq_self",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1809,6 +1872,7 @@
      "level": 4,
      "module": "Game.Levels.AdvAddition.L04add_right_eq_self",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1835,6 +1899,7 @@
      "level": 5,
      "module": "Game.Levels.AdvAddition.L05add_right_eq_zero",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [
       "cases"
      ],
@@ -1858,6 +1923,7 @@
      "level": 6,
      "module": "Game.Levels.AdvAddition.L06add_left_eq_zero",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1897,6 +1963,7 @@
      "newDefinitions": [
       "LE"
      ],
+     "newHiddenTactics": [],
      "newTactics": [
       "use"
      ],
@@ -1908,7 +1975,7 @@
      "statementDoc": "If $x$ is a number, then $x \\le x$.",
      "statementName": "le_refl",
      "statementSig": "(x : ℕ) : x ≤ x",
-     "theoremTab": null,
+     "theoremTab": "≤",
      "title": "The `use` tactic",
      "world": "LessOrEqual"
     },
@@ -1920,6 +1987,7 @@
      "level": 2,
      "module": "Game.Levels.LessOrEqual.L02zero_le",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1929,7 +1997,7 @@
      "statementDoc": "If $x$ is a number, then $0 \\le x$.",
      "statementName": "zero_le",
      "statementSig": "(x : ℕ) : 0 ≤ x",
-     "theoremTab": null,
+     "theoremTab": "≤",
      "title": "0 ≤ x",
      "world": "LessOrEqual"
     },
@@ -1941,6 +2009,7 @@
      "level": 3,
      "module": "Game.Levels.LessOrEqual.L03le_succ_self",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -1950,7 +2019,7 @@
      "statementDoc": "If $x$ is a number, then $x \\le \\operatorname{succ}(x)$.",
      "statementName": "le_succ_self",
      "statementSig": "(x : ℕ) : x ≤ succ x",
-     "theoremTab": null,
+     "theoremTab": "+",
      "title": "x ≤ succ x",
      "world": "LessOrEqual"
     },
@@ -1975,6 +2044,7 @@
      "level": 4,
      "module": "Game.Levels.LessOrEqual.L04le_trans",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2001,6 +2071,7 @@
      "level": 5,
      "module": "Game.Levels.LessOrEqual.L05le_zero",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2010,7 +2081,7 @@
      "statementDoc": "If $x \\leq 0$, then $x=0$.",
      "statementName": "le_zero",
      "statementSig": "(x : ℕ) (hx : x ≤ 0) : x = 0",
-     "theoremTab": "+",
+     "theoremTab": "≤",
      "title": "x ≤ 0 → x = 0",
      "world": "LessOrEqual"
     },
@@ -2022,6 +2093,7 @@
      "level": 6,
      "module": "Game.Levels.LessOrEqual.L06le_antisymm",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2031,7 +2103,7 @@
      "statementDoc": "If $x \\leq y$ and $y \\leq x$, then $x = y$.",
      "statementName": "le_antisymm",
      "statementSig": "(x y : ℕ) (hxy : x ≤ y) (hyx : y ≤ x) : x = y",
-     "theoremTab": null,
+     "theoremTab": "≤",
      "title": "x ≤ y and y ≤ x implies x = y",
      "world": "LessOrEqual"
     },
@@ -2056,6 +2128,7 @@
      "level": 7,
      "module": "Game.Levels.LessOrEqual.L07or_symm",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [
       "left",
       "right"
@@ -2097,6 +2170,7 @@
      "level": 8,
      "module": "Game.Levels.LessOrEqual.L08le_total",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2106,7 +2180,7 @@
      "statementDoc": "If $x$ and $y$ are numbers, then either $x \\leq y$ or $y \\leq x$.",
      "statementName": "le_total",
      "statementSig": "(x y : ℕ) : x ≤ y ∨ y ≤ x",
-     "theoremTab": null,
+     "theoremTab": "≤",
      "title": "x ≤ y or y ≤ x",
      "world": "LessOrEqual"
     },
@@ -2118,6 +2192,7 @@
      "level": 9,
      "module": "Game.Levels.LessOrEqual.L09succ_le_succ",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2139,6 +2214,7 @@
      "level": 10,
      "module": "Game.Levels.LessOrEqual.L10le_one",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2160,6 +2236,7 @@
      "level": 11,
      "module": "Game.Levels.LessOrEqual.L11le_two",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2188,6 +2265,7 @@
      "level": 1,
      "module": "Game.Levels.AdvMultiplication.L01mul_le_mul_right",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2222,6 +2300,7 @@
      "level": 2,
      "module": "Game.Levels.AdvMultiplication.L02mul_left_ne_zero",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2248,6 +2327,7 @@
      "level": 3,
      "module": "Game.Levels.AdvMultiplication.L03eq_succ_of_ne_zero",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [
       "tauto"
      ],
@@ -2280,6 +2360,7 @@
      "level": 4,
      "module": "Game.Levels.AdvMultiplication.L04one_le_of_ne_zero",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2301,6 +2382,7 @@
      "level": 5,
      "module": "Game.Levels.AdvMultiplication.L05le_mul_right",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2343,6 +2425,7 @@
      "level": 6,
      "module": "Game.Levels.AdvMultiplication.L06mul_right_eq_one",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [
       "have"
      ],
@@ -2371,6 +2454,7 @@
      "level": 7,
      "module": "Game.Levels.AdvMultiplication.L07mul_ne_zero",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2401,6 +2485,7 @@
      "level": 8,
      "module": "Game.Levels.AdvMultiplication.L08mul_eq_zero",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2431,6 +2516,7 @@
      "level": 9,
      "module": "Game.Levels.AdvMultiplication.L09mul_left_cancel",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2461,6 +2547,7 @@
      "level": 10,
      "module": "Game.Levels.AdvMultiplication.L10mul_right_eq_self",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2489,6 +2576,7 @@
      "level": 1,
      "module": "Game.Levels.Algorithm.L01add_left_comm",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2527,6 +2615,7 @@
      "level": 2,
      "module": "Game.Levels.Algorithm.L02add_algo1",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
@@ -2553,6 +2642,7 @@
      "level": 3,
      "module": "Game.Levels.Algorithm.L03add_algo2",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [
       "simp"
      ],
@@ -2576,6 +2666,7 @@
      "level": 4,
      "module": "Game.Levels.Algorithm.L04add_algo3",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [
       "simp_add"
      ],
@@ -2604,6 +2695,7 @@
      "level": 5,
      "module": "Game.Levels.Algorithm.L05pred",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [
       "MyNat.pred_succ"
@@ -2640,6 +2732,7 @@
      "level": 6,
      "module": "Game.Levels.Algorithm.L06is_zero",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [
       "trivial"
      ],
@@ -2675,8 +2768,10 @@
      "level": 7,
      "module": "Game.Levels.Algorithm.L07succ_ne_succ",
      "newDefinitions": [],
+     "newHiddenTactics": [
+      "contrapose!"
+     ],
      "newTactics": [
-      "contrapose",
       "contrapose"
      ],
      "newTheorems": [],
@@ -2699,6 +2794,7 @@
      "level": 8,
      "module": "Game.Levels.Algorithm.L08decide",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [
       "decide"
      ],
@@ -2722,6 +2818,7 @@
      "level": 9,
      "module": "Game.Levels.Algorithm.L09decide2",
      "newDefinitions": [],
+     "newHiddenTactics": [],
      "newTactics": [],
      "newTheorems": [],
      "preamble": [
