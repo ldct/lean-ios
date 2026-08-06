@@ -146,6 +146,23 @@ class LevelParser:
             elif word in IDENTS_CMDS:
                 eol = text.find("\n", i)
                 eol = len(text) if eol < 0 else eol
+                # These commands take a space-separated identifier list that
+                # may wrap onto indented continuation lines (e.g. Tutorial
+                # L03's `NewTheorem` spilling `four_eq_succ_three` onto the
+                # next line). Extend the span across following indented,
+                # non-comment, ident-only lines; real commands start at
+                # column 0 so they terminate the list.
+                while eol < len(text):
+                    nl = text.find("\n", eol + 1)
+                    nl = len(text) if nl < 0 else nl
+                    line = text[eol + 1:nl]
+                    stripped = line.strip()
+                    if not stripped or line[:1] not in (" ", "\t"):
+                        break
+                    if stripped.startswith(("--", "/-")) or ":=" in stripped \
+                            or '"' in stripped:
+                        break
+                    eol = nl
                 # tactic names may end in '!' (e.g. contrapose!), which
                 # IDENT_RE deliberately excludes elsewhere
                 names = [n.strip("«»") for n in
