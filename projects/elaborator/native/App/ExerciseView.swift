@@ -65,6 +65,13 @@ struct ExerciseView: View {
     "assumption", "cases", "constructor", "left", "right", "have", "refine",
   ]
 
+  /// Lean unicode glyphs the iOS keyboard can't produce (e.g. `←` for
+  /// backwards `rw`, entered as `\l` in the VS Code extension). `←` leads
+  /// since it's the one NNG's "rewriting backwards" level needs.
+  private static let symbols: [String] = [
+    "←", "→", "≤", "≠", "¬", "∧", "∨", "↔", "∀", "∃", "×", "∘", "⟨", "⟩", "ℕ",
+  ]
+
   /// NNG levels carry their own accumulated tactic set.
   private var tacticList: [String] {
     exercise.nng.map { $0.tactics } ?? Self.tactics
@@ -97,6 +104,7 @@ struct ExerciseView: View {
             theoremsRow
           }
         }
+        symbolsRow
         inputRow
       }
       .padding(.horizontal, 16)
@@ -416,6 +424,33 @@ struct ExerciseView: View {
     }
   }
 
+  private var symbolsRow: some View {
+    HStack(alignment: .center, spacing: 8) {
+      Text("SYMBOLS")
+        .font(.system(size: 10, weight: .bold, design: .rounded))
+        .tracking(0.6)
+        .foregroundStyle(.secondary)
+      ScrollView(.horizontal, showsIndicators: false) {
+        HStack(spacing: 8) {
+          ForEach(Self.symbols, id: \.self) { s in
+            Button(action: { insertSymbol(s) }) {
+              Text(s)
+                .font(.system(size: 16))
+                .foregroundStyle(.primary)
+                .frame(minWidth: 26)
+                .padding(.horizontal, 9)
+                .padding(.vertical, 5)
+                .background(Palette.card)
+                .overlay(Capsule().stroke(Palette.cardStroke, lineWidth: 1))
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+          }
+        }
+      }
+    }
+  }
+
   @ViewBuilder
   private var constantsRow: some View {
     HStack(alignment: .center, spacing: 8) {
@@ -569,6 +604,17 @@ struct ExerciseView: View {
       input += " "
     }
     input += token + " "
+  }
+
+  /// Appends a Lean glyph, letting it hug an open bracket (`rw [←`) but
+  /// otherwise separating it from the preceding token with a space.
+  private func insertSymbol(_ symbol: String) {
+    if !input.isEmpty && !input.hasSuffix(" ")
+      && !input.hasSuffix("[") && !input.hasSuffix("(")
+    {
+      input += " "
+    }
+    input += symbol
   }
 
   private func insertTheorem(_ name: String) {
