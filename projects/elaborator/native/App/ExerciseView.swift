@@ -65,11 +65,12 @@ struct ExerciseView: View {
     "assumption", "cases", "constructor", "left", "right", "have", "refine",
   ]
 
-  /// Lean unicode glyphs the iOS keyboard can't produce (e.g. `←` for
-  /// backwards `rw`, entered as `\l` in the VS Code extension). `←` leads
-  /// since it's the one NNG's "rewriting backwards" level needs.
+  /// Lean glyphs handy for the tactic field: the unicode ones the iOS
+  /// keyboard can't produce (e.g. `←` for backwards `rw`, entered as `\l`
+  /// in the VS Code extension), plus `[` `]` to frame `rw [...]`. `←` and
+  /// the brackets lead since they're what NNG's `rw` levels lean on.
   private static let symbols: [String] = [
-    "←", "→", "≤", "≠", "¬", "∧", "∨", "↔", "∀", "∃", "×", "∘", "⟨", "⟩", "ℕ",
+    "←", "[", "]", "→", "≤", "≠", "¬", "∧", "∨", "↔", "∀", "∃", "×", "∘", "⟨", "⟩", "ℕ",
   ]
 
   /// NNG levels carry their own accumulated tactic set.
@@ -606,9 +607,15 @@ struct ExerciseView: View {
     input += token + " "
   }
 
-  /// Appends a Lean glyph, letting it hug an open bracket (`rw [←`) but
-  /// otherwise separating it from the preceding token with a space.
+  /// Appends a Lean glyph. A closing bracket hugs the preceding token
+  /// (`foo]`); a glyph after an open bracket hugs it (`rw [←`); otherwise
+  /// the glyph is separated from the previous token with a space.
   private func insertSymbol(_ symbol: String) {
+    if symbol == "]" || symbol == ")" {
+      while input.hasSuffix(" ") { input.removeLast() }
+      input += symbol
+      return
+    }
     if !input.isEmpty && !input.hasSuffix(" ")
       && !input.hasSuffix("[") && !input.hasSuffix("(")
     {
